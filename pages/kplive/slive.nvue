@@ -6,88 +6,61 @@
 		<view>
 
 			<!-- 横屏展示 -->
-			<!-- <live-pusher v-if="screen==1" id='livePusher' ref="livePusher" class="livePusher"
+			<live-pusher v-if="screen==1" id='livePusher' ref="livePusher" class="livePusher"
 				:style="{'height':isHeight+'px'}"
 				url="rtmp://livepush.kpszkj.cn/kplive/kp_wh?txSecret=c367684f4f99dcc9654b1f5503c41867&txTime=626D5CFF"
-				audio-volume-type="media" mode="SD" :muted="false" :enable-camera="true" :auto-focus="true" :beauty="3"
-				whiteness="3" aspect="1:1" @statechange="statechange" @netstatus="netstatus" @error="error">
-			</live-pusher> -->
-			<!-- 横屏-翻转摄像头 -->
-			<!-- <image v-if="!lState && screen==1" src="../../static/overturn.png" class="w_btn overturnBtn2"
-				@click="switchCamera">
-			</image> -->
-			<!-- 横屏-开始直播 -->
-			<!-- <text v-if="!lState && screen==1" class="w_live w_live2" id="w_live" size="mini" type="primary"
-				@click="start1">开始直播</text> -->
-
-
-			<!-- 竖屏展示 -->
-			<live-pusher v-if="screen==0" id='livePusher' local-mirror="enable" remote-mirror="true" ref="livePusher"
-				:style="{'height':isHeight+'px'}"
-				url="rtmp://livepush.kpszkj.cn/kplive/kp_wh?txSecret=c367684f4f99dcc9654b1f5503c41867&txTime=626D5CFF"
-				audio-volume-type="media" orientation="vertical" mode="SD" :muted="false" :enable-camera="true"
+				audio-volume-type="media" orientation="horizontal" mode="SD" :muted="false" :enable-camera="true"
 				:auto-focus="true" :beauty="3" whiteness="3" aspect="1:1" @statechange="statechange"
 				@netstatus="netstatus" @error="error">
-				<!-- orientation="horizontal" -->
 			</live-pusher>
-			<!-- 竖屏-翻转摄像头 -->
-			<image v-if="!lState && screen==0" src="../../static/overturn.png" class="overturnBtn w_btn"
+			<!-- 横屏-翻转摄像头 -->
+			<image v-if="!lState && screen==1" src="../../static/overturn.png" class="w_btn overturnBtn2"
 				@click="switchCamera">
 			</image>
-			<!-- 竖屏-开始直播 -->
-			<text v-if="!lState && screen==0" class="w_live" id="w_live" size="mini" type="primary"
+			<!-- 横屏-开始直播 -->
+			<text v-if="!lState && screen==1" class="w_live w_live2" id="w_live" size="mini" type="primary"
 				@click="start1">开始直播</text>
+			<!-- 返回按钮 -->
+			<button v-if="!lState" class="returna" @click="reClick">aaa</button>
 
-			<!-- 竖屏-直播关闭 -->
+
+
+			<!-- 直播关闭 -->
 			<image v-if="lState" src="../../static/close.png" class="closebtn w_btn" @click="popup"></image>
-			<!-- 竖屏-直播关闭弹窗 -->
+			<!-- 直播关闭弹窗 -->
 			<uni-popup ref="popup" type="dialog" maskClick="false">
 				<uni-popup-dialog mode="base" type="warn" title="提示" content="是否关闭直播" message="成功消息" :duration="2000"
 					:before-close="true" @close="close1" @confirm="confirm"></uni-popup-dialog>
 			</uni-popup>
 
-			<!-- 竖屏-直播分享弹窗 -->
+			<!-- 直播分享弹窗 -->
 			<uni-popup ref="popup1" type="share" maskClick="false">
 				<uni-popup-share title="分享到" @select="select"></uni-popup-share>
 			</uni-popup>
 
-			<!-- 竖屏-直播分享 -->
+			<!-- 直播分享 -->
 			<image v-if="lState" src="../../static/share.png" class="closebtn1 w_btn" @click="popup1()"></image>
-			<!-- 竖屏-翻转摄像头 -->
+			<!-- 翻转摄像头 -->
 			<image v-if="lState" src="../../static/overturn.png" class="overturnBtn1 w_btn" @click="switchCamera">
 			</image>
-			<!-- 竖屏-直播倒计时 -->
+			<!-- 直播倒计时 -->
 			<text v-if="isDown" class="aaa">{{dowNum}}</text>
 
-			<!-- 竖屏-直播计时器 -->
+			<!-- 直播计时器 -->
 			<text v-if="!lState" id="text" class="text">{{iTime}}</text>
-			<!-- <uni-countdown v-if="isDown" class="aaa" :show-day="false" @timeup="start" :second="3"></uni-countdown>
-			<text v-if="!lState" class="closebtn" plain="true" @click="stop">×</text>
-			<button class="btn" @click="switchCamera">切换摄像头</button>
-			<button v-if="!lState" class="btn w_live" size="mini"  type="primary" @click="start">开始直播</button>
-			<button v-if="lState" class="btn closebtn" plain="true" @click="stop">×</button>
-			<view class="btnradio"  @click="stop"></view> -->
 
 			<!-- 横屏- -->
-			<!-- <view v-if="!lState && screen==1" class="lMess2">
+			<view v-if="!lState && screen==1" class="lMess2">
 				<image class="image2" :src="srcUrl"></image>
 				<text class="qxt">主播 千小兔</text>
-			</view> -->
-			<!-- 竖屏-直播前用户信息 -->
-			<view v-if="!lState && screen==0" class="lMess">
-				<image class="image" :src="srcUrl"></image>
-				<text class="pcla pclaa">主播 千小兔</text>
 			</view>
-			<!-- 竖屏-直播后用户信息 -->
+			<!-- 直播后用户信息 -->
 			<view v-if="lState" class="lMess">
 				<image class="image" :src="srcUrl"></image>
 				<text class="pcla">主播 千小兔</text>
 				<view class="radiocla"></view>
 				<text class="pcla1">在线1.5w | 累计3.88w</text>
 			</view>
-			<!-- 返回按钮 -->
-			<button class="returna" @click="reClick">aaa</button>
-			
 			<!-- <button class="btn w_live" @click="start">結束直播</button>
 			<button class="btn" @click="pause">暂停推流</button>
 			<button class="btn" @click="resume">resume</button>
@@ -105,7 +78,7 @@
 		data() {
 			return {
 				//屏幕方向 0竖屏 1横屏
-				screen: 0,
+				screen: 1,
 				//直播状态
 				lState: false,
 				//屏幕高度
@@ -126,7 +99,9 @@
 			}
 		},
 		onReady() {
-			console.log('000000竖屏直播页面')
+			console.log('111横屏直播页面')
+			/* 切换横屏 */
+			plus.screen.lockOrientation('landscape-primary');
 			// 注意：需要在onReady中 或 onLoad 延时
 			this.context = uni.createLivePusherContext("livePusher", this);
 			this.startPreview();
@@ -145,17 +120,10 @@
 						console.log(res.language);
 						console.log(res.version);
 						console.log(res.platform);
-						that.isHeight = res.screenHeight - res.statusBarHeight - 2;
+						console.log(res.deviceId);
+						that.isHeight = res.screenWidth - res.statusBarHeight - 2;
 					}
 				});
-			},
-			reClick() {
-				// plus.screen.lockOrientation('portrait-primary');
-				uni.navigateBack({
-				    delta: 1
-				});
-				console.log('竖屏返回')
-			
 			},
 			finality() {
 				this.$emit('finish');
@@ -188,6 +156,18 @@
 					this.start()
 				}
 				// }
+			},
+			reClick() {
+
+				/* uni.navigateTo({
+					url: "/pages/index/index"
+				}); */
+				plus.screen.lockOrientation('portrait-primary');
+				uni.navigateBack({
+				    delta: 1
+				});
+				console.log('返回')
+
 			},
 			start: function() {
 				this.context.start({
@@ -275,8 +255,10 @@
 				console.log('结束时长' + this.iTime);
 				// 输入框的值
 				console.log(value);
+				/* 竖屏展示 */
+				plus.screen.lockOrientation('portrait-primary');
 				uni.redirectTo({
-					url: "/pages/kplive/over?iTime="+this.iTime+"&srcUrl="+this.srcUrl
+					url: "/pages/kplive/over?iTime=" + this.iTime + "&srcUrl=" + this.srcUrl
 				});
 				done();
 			},
@@ -306,18 +288,9 @@
 </script>
 
 <style>
-	.returna {
-		position: fixed;
-		top: 198px;
-		right: 30px;
-		background: rgba(0, 0, 0, 0.2);
-		color: #ffffff;
-		font-size: 26px;
-		/* border */
-	}
 	.text {
 		position: fixed;
-		right: 18px;
+		right: 210px;
 		top: 60px;
 		font-size: 21px;
 		padding: 5px 10px;
@@ -328,8 +301,8 @@
 
 	.aaa {
 		position: fixed;
-		top: 300px;
-		left: 130%;
+		top: 145px;
+		left: 330px;
 		padding: 5px 30px;
 		font-size: 80px;
 		border-radius: 100%;
@@ -339,21 +312,32 @@
 		background: rgba(255, 255, 255, 0.3);
 	}
 
+	.returna {
+		position: fixed;
+		top: 58px;
+		left: 50px;
+		background: rgba(0, 0, 0, 0.2);
+		color: #ffffff;
+		font-size: 26px;
+		/* border */
+	}
+
 	.w_btn {
 		width: 41px;
 		height: 41px;
 	}
 
+	.overturnBtn2 {
+		position: fixed;
+		top: 55px;
+		left: 80px;
+		/* transform: rotate(90deg); */
+
+	}
+
 	.container {
 		border-bottom-color: #000000;
 		border-bottom-width: 1px;
-	}
-
-	.livePusher {
-		/* height:757px; */
-		/* transform:translateY(90deg); */
-		/* width:1000px; */
-		/* videoHeight:100px; */
 	}
 
 	.overturnBtn {
@@ -363,66 +347,51 @@
 
 	}
 
-	/* .overturnBtn2 {
-		position: fixed;
-		top: 255px;
-		right: 21px;
-		transform: rotate(90deg);
-
-	} */
-
 	.w_live2 {
-		transform: rotate(90deg);
+		/* transform: rotate(90deg); */
 		background: #d83b57;
-		/* width:50px;
-		height:240px; */
 		font-size: 16px;
 		border-radius: 50px;
-		/* display: flex; */
 		padding: 2px 90px;
 		text-align: center;
 		line-height: 40px;
 		color: #FFFFFF;
-		/* border: 0px solid #ffffff; */
 		position: fixed;
-		right: 230px;
-		bottom: 370px;
-		/* text-algin:justify; */
-		/* left:30px; */
-		/* margin: 0 50%; */
+		right: 330px;
+		bottom: 20px;
 
 	}
 
 	.qxt {
-		transform: rotate(90deg);
+		/* transform: rotate(90deg); */
 		position: fixed;
-		/* font-size: 16px; */
 		color: #FFFFFF;
-		top: 150px;
-		right: -5px;
+		top: 62px;
+		right: 68px;
+	}
+
+	.image2 {
+		position: fixed;
+		top: 53px;
+		right: 23px;
+		border: 1px solid #ffffff;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		/* transform: rotate(90deg); */
 	}
 
 	.lMess2 {
 		position: fixed;
-		transform: rotate(90deg);
-		top: 130px;
-		right: -50px;
+		/* transform: rotate(90deg); */
+		top: 50px;
+		right: 20px;
 		border-radius: 50px;
 		width: 180%;
 		height: 46px;
 		background: #d83b57;
 	}
 
-/* 	.image2 {
-		position: fixed;
-		top: 66px;
-		right: 20px;
-		border: 1px solid #ffffff;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		transform: rotate(90deg);
-	} */
 
 	.overturnBtn1 {
 		position: fixed;
@@ -432,16 +401,12 @@
 
 	.w_live {
 		background: #d83b57;
-		/* width:210px;
-		height:40px; */
 		font-size: 16px;
 		border-radius: 50px;
-		/* display: flex; */
 		padding: 1px 90px;
 		text-align: center;
 		line-height: 40px;
 		color: #FFFFFF;
-		/* border: 0px solid #ffffff; */
 		position: fixed;
 		bottom: 85px;
 		margin: 0 50%;
@@ -449,17 +414,9 @@
 	}
 
 	.closebtn {
-		/* font-size:36px; */
-		/* color: #FFFFFF; */
 		position: fixed;
 		right: 18px;
 		top: 60px;
-		/* border: 0px blue solid;
-		padding:0px 11px;
-		border-radius: 50%;
-		background:rgba(2,2,2,0.2); */
-		/* opacity: 0.2; */
-		/* background:#222222; */
 	}
 
 	.closebtn1 {
@@ -521,6 +478,4 @@
 		background: #ffba61;
 		border-radius: 50%;
 	}
-
-	.btnradio {}
 </style>
