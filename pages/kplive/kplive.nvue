@@ -3,22 +3,57 @@
 		<view>
 			<!--  这里是状态栏 -->&nbsp;
 		</view>
-		<view style="height: 700px;border: 1px solid red;">
-			<live-pusher id='livePusher' ref="livePusher" class="livePusher" url="" mode="SD" :muted="true"
-				:enable-camera="true" :auto-focus="true" :beauty="3" whiteness="3" aspect="9:16"
+		<view style="height:760px;">
+			<live-pusher id='livePusher' ref="livePusher" class="livePusher" url="rtmp://livepush.kpszkj.cn/kplive/kp_wh?txSecret=c367684f4f99dcc9654b1f5503c41867&txTime=626D5CFF" audio-volume-type="media" orientation="vertical" mode="SD" :muted="false"
+				:enable-camera="true" :auto-focus="true" :beauty="3" whiteness="3" aspect="1:1"
 				@statechange="statechange" @netstatus="netstatus" @error="error">
+				 <!-- orientation="horizontal" -->
 			</live-pusher>
-			<cover-view class="controls-title">简单的自定义 controls</cover-view>
-			<cover-image class="controls-play img" @click="play" src="/static/template.png"></cover-image>
-			<cover-image class="controls-pause img" @click="pause" src="/static/templateHL.png"></cover-image>
-			<!-- <button class="btn" @click="start">开始推流</button>
-			<button class="btn" @click="pause">暂停推流</button>
+			
+			
+			<!-- 翻转摄像头 -->
+			<image v-if="!lState" src="../../static/overturn.png" class="overturnBtn w_btn" @click="switchCamera"></image>
+			<!-- 开始直播 -->
+			<text v-if="!lState" class="w_live" size="mini"  type="primary" @click="start">开始直播</text>
+			
+			
+			<!-- 直播关闭 -->
+			<image v-if="lState" src="../../static/close.png" class="closebtn w_btn" @click="popup"></image>
+			<!-- 直播關閉彈窗 -->
+			<uni-popup ref="popup" type="dialog" maskClick="false">
+				<uni-popup-dialog mode="base" type="warn" title="提示" content="是否关闭直播" message="成功消息" :duration="2000" :before-close="true" @close="close1" @confirm="confirm"></uni-popup-dialog>
+			</uni-popup>
+			<!-- 直播分享 -->
+			<uni-popup ref="popup1" type="share">
+			    <uni-popup-share title="分享到" @select="select"></uni-popup-share>
+			</uni-popup>
+			
+			<!-- 直播分享 -->
+			<image v-if="lState" src="../../static/share.png" class="closebtn1 w_btn" @click="popup1()"></image>
+			<!-- 翻转摄像头 -->
+			<image v-if="lState" src="../../static/overturn.png" class="overturnBtn1 w_btn" @click="switchCamera"></image>
+			<!-- <text v-if="!lState" class="closebtn" plain="true" @click="stop">×</text> -->
+			<!-- <button class="btn" @click="switchCamera">切换摄像头</button> -->
+			<!-- <button v-if="!lState" class="btn w_live" size="mini"  type="primary" @click="start">开始直播</button>
+			<button v-if="lState" class="btn closebtn" plain="true" @click="stop">×</button> -->
+			<!-- <view class="btnradio"  @click="stop">
+				
+			</view> -->
+			<view v-if="lState"  class="lMess">
+				<image class="image" :src="srcUrl"></image>
+				<text class="pcla">主播  千小兔</text>
+				<view class="radiocla"></view>
+				<text class="pcla1">在线1.5w | 累计3.88w</text>
+			</view>
+			<!-- <button class="btn w_live" @click="start">結束直播</button> -->
+			<!-- <button class="btn" @click="pause">暂停推流</button>
 			<button class="btn" @click="resume">resume</button>
 			<button class="btn" @click="stop">停止推流</button>
 			<button class="btn" @click="snapshot">快照</button>
 			<button class="btn" @click="startPreview">开启摄像头预览</button>
 			<button class="btn" @click="stopPreview">关闭摄像头预览</button>
 			<button class="btn" @click="switchCamera">切换摄像头</button> -->
+			
 		</view>
 	</view>
 </template>
@@ -26,14 +61,24 @@
 <script>
 	export default {
 		data() {
-			return {}
-		},
+			return {
+				//直播状态
+				lState:false,
+				//屏幕高度
+				screenWidth:'',
+				//图片路径
+				srcUrl:'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/6acec660-4f31-11eb-a16f-5b3e54966275.jpg',
+				}
+			},
 		onReady() {
 			// 注意：需要在onReady中 或 onLoad 延时
 			this.context = uni.createLivePusherContext("livePusher", this);
 			this.startPreview();
 		},
 		methods: {
+			finality(){
+						this.$emit('finish');
+						},
 			statechange(e) {
 				//console.log("statechange:" + JSON.stringify(e));
 			},
@@ -47,6 +92,21 @@
 				this.context.start({
 					success: (a) => {
 						console.log("livePusher.start:" + JSON.stringify(a));
+						this.lState=true;
+						
+						// setTimeout(() => {
+						// 	//成功时候
+						// },1000)
+						// var x = document.getElementById("livePusher").height;
+						// var x = document.getElementById("#livePusher").offsetHeight;
+						// console.log('---------------屏幕高度：'+x+'---------------------')
+						// axios.get('http://cim.lswhy.cn/info/getAppUrl.do')
+						// .then(function (response) {
+						// 	// this.screenWidth=response
+							
+						// },function (err) {
+						// 	console.log('失败')
+						// })
 					}
 				});
 			},
@@ -81,9 +141,28 @@
 			stop: function() {
 				this.context.stop({
 					success: (a) => {
+						this.lState=false;
 						console.log(JSON.stringify(a));
 					}
 				});
+			},
+			popup(){
+					this.$refs.popup.open();
+			},
+			popup1(){
+					this.$refs.popup1.open();
+			},
+			close1:function(done){
+				console.log('111111');
+				done();
+			},
+			confirm:function(done,value){
+						this.stop();
+			            // 输入框的值
+			            console.log(value);
+			            // TODO 做一些其他的事情，手动执行 done 才会关闭对话框
+			            // ...
+			            done();
 			},
 			switchCamera: function() {
 				this.context.switchCamera({
@@ -111,7 +190,104 @@
 </script>
 
 <style>
-	.livePusher {
-		height: 700px;
+	.w_btn{
+		width:41px;
+		height:41px;
 	}
+	.livePusher {
+		height:760px;
+		/* width:1000px; */
+		/* videoHeight:100px; */
+	}
+	.overturnBtn{
+		position:fixed;
+		right:18px;
+		top:95px;
+		
+	}
+	.overturnBtn1{
+		position:fixed;
+		right:18px;
+		top:170px;
+	}
+	.w_live{
+		background:#d83b57;
+		/* width:210px;
+		height:40px; */
+		font-size:16px;
+		border-radius:50px;
+		/* display: flex; */
+		padding:1px 90px;
+		text-align: center;
+		line-height:40px;
+		color: #FFFFFF;
+		/* border: 0px solid #ffffff; */
+		position:fixed;
+		bottom:85px;
+		margin:0 50%;
+		
+	}
+	.closebtn{
+		/* font-size:36px; */
+		/* color: #FFFFFF; */
+		position:fixed;
+		right:18px;
+		top:60px;
+		/* border: 0px blue solid;
+		padding:0px 11px;
+		border-radius: 50%;
+		background:rgba(2,2,2,0.2); */
+		/* opacity: 0.2; */
+		/* background:#222222; */
+	}
+	.closebtn1{
+		position:fixed;
+		right:18px;
+		top:115px;
+	}
+	.lMess{
+		position:fixed;
+		top:60px;
+		left:18px;
+		border-radius:50px;
+		width:180%;
+		height:46px;
+		background:#d83b57;
+	}
+	.image{
+		position:fixed;
+		top:63px;
+		left:21px;
+		border: 1px solid #ffffff;
+		width:40px;
+		height:40px;
+		border-radius:50%;
+	}
+	.pcla{
+		position:fixed;
+		top:65px;
+		left:68px;
+		font-size:13px;
+		color: #FFFFFF;
+	}
+	.pcla1{
+		position:fixed;
+		top:86px;
+		left:76px;
+		font-size:11px;
+		color: #FFFFFF;
+	}
+	.radiocla{
+		position:fixed;
+		top:90px;
+		left:68px;
+		width:5px;
+		height:5px;
+		background:#ffba61;
+		border-radius: 50%;
+	}
+	.btnradio{
+		
+	}
+	
 </style>

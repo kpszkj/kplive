@@ -9,16 +9,14 @@
 		</navigator>
 	</view>
 </template>
-
 <script>
 	export default {
 		data() {
 			return {
-				href: 'http://kpszkj.cn'
+				href: 'http://kpszkj.cn',
 			}
 		},
 		methods: {
-
 		}
 	}
 </script>
