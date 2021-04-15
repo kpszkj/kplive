@@ -44,10 +44,19 @@
 			<!--  url="/pages/kplive/kplive" -->
 				<button @click="affirm" type="default">确认信息{{text}}</button>
 				<!--  v-if="code ==0" -->
-				<uni-popup ref="popup1" type="center">
+				<!-- <uni-popup ref="popup1" type="center">
+					<text class="context1">{{context1}}</text>
 					<button class="mini-btn" type="default" @click="consent1">不同意</button>
 					<button class="mini-btn" type="default" @click="consent2">同意</button>
-				</uni-popup>
+				</uni-popup> -->
+				
+				<view class="popUp" v-if="isShow">
+					<view class="popUp1">
+						<text class="context1">{{context1}}</text>
+						<button class="mini-btn" type="default" @click="consent1">不同意</button>
+						<button class="mini-btn" type="default" @click="consent2">同意</button>
+					</view>
+				</view>
 
 		</view>
 
@@ -89,6 +98,9 @@
 				screen: 0,
 				//设备识别码
 				code:0,
+				//隐私协议
+				context1:'',
+				isShow:true,
 			}
 		},
 		onReady() {
@@ -104,7 +116,19 @@
 			    console.log('err'+e)
 			}
 			
-			this.$refs.popup1.open() //弹窗
+			
+			//从本地缓存中同步获取指定 key 对应的内容
+			try {
+			    const value = uni.getStorageSync('context');
+			    if (value) {
+			        // console.log(value);
+					this.context1=value;
+			    }
+			} catch (e) {
+			    console.log('err'+e)
+			}
+			
+			//this.$refs.popup1.open() //弹窗
 			this.myGetRequest();
 			this.Info();
 		},
@@ -121,7 +145,8 @@
 			consent2() {
 				this.privacy = 1;
 				if (this.privacy == 1) {
-					this.$refs.popup1.close();
+					this.isShow=false;
+					// this.$refs.popup1.close();
 					console.log('隐私状态' + this.privacy)
 				}
 			},
@@ -234,7 +259,10 @@
 		/* position: fixed;
 		top: 100px; */
 	}
-
+.context1{
+	/* height: 1000px; */
+	/* overflow-y: auto; */
+}
 	.scroll-view-item_H {
 		width: 85px;
 		height: 85px;
@@ -242,10 +270,25 @@
 		margin-right: 10px;
 		display: inline-block;
 	}
-
-	.mini-btn {
-		/* position: fixed;
-	top: 90px; */
+	.popUp{
+		position:absolute;
+		right:0;
+		left:0;
+		top:0px;
+		bottom:0;
+		background: #fff;
+		/* border: #000000 2px solid; */
+		/* display:flex; */
+		/* align-items: auto; */
+		/* margin: 0 auto; */
+		/* width:100%; */
+		
+	}
+	.popUp1{
+		margin:50px auto;
+		/* align-items: auto; */
+		width:83%;
+		border: #000000 2px solid;
 	}
 
 	.screen {

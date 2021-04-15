@@ -1,6 +1,6 @@
 <template>
 	<view class="container">
-		<view>
+		<view :style="{'height':stateHeight+'px'}">
 			<!--  这里是状态栏 -->&nbsp;
 		</view>
 		<view>
@@ -96,6 +96,8 @@
 				h: 0,
 				iTime: '00:00:00',
 				timer: 0,
+				//状态栏高度
+				stateHeight:0,
 			}
 		},
 		onReady() {
@@ -106,6 +108,15 @@
 			this.context = uni.createLivePusherContext("livePusher", this);
 			this.startPreview();
 			this.info();
+		},
+		onBackPress(options) {//用户物理返回键
+		
+			if(this.lState == true){
+				return true;
+			}
+			plus.screen.lockOrientation('portrait-primary');
+		    console.log("用户按下物理返回键");
+			
 		},
 		methods: {
 			info: function() {
@@ -121,7 +132,9 @@
 						console.log(res.version);
 						console.log(res.platform);
 						console.log(res.deviceId);
-						that.isHeight = res.screenWidth - res.statusBarHeight - 2;
+						//that.stateHeight = res.statusBarHeight;
+						that.isHeight = res.screenWidth;
+						// that.isHeight = res.screenWidth - res.statusBarHeight - 2;
 					}
 				});
 			},
@@ -298,7 +311,6 @@
 		background: rgba(255, 255, 255, 0.3);
 
 	}
-
 	.aaa {
 		position: fixed;
 		top: 145px;

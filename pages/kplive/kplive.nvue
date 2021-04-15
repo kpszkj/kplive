@@ -132,6 +132,15 @@
 			this.startPreview();
 			this.info();
 		},
+		onBackPress(options) {//用户物理返回键
+		
+			if(this.lState == true){
+				return true;
+			}
+			// plus.screen.lockOrientation('portrait-primary');
+		    console.log("用户按下物理返回键");
+			
+		},
 		methods: {
 			info: function() {
 				console.log('Info111')

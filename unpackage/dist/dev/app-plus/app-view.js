@@ -425,39 +425,53 @@ var render = function() {
             },
             [_vm._v("确认信息" + _vm._$g(18, "t0-0"))]
           ),
-          _c(
-            "uni-popup",
-            { ref: "popup1", attrs: { _i: 19 } },
-            [
-              _c(
-                "v-uni-button",
-                {
-                  staticClass: _vm._$g(20, "sc"),
-                  attrs: { type: "default", _i: 20 },
-                  on: {
-                    click: function($event) {
-                      return _vm.$handleViewEvent($event)
-                    }
-                  }
-                },
-                [_vm._v("不同意")]
-              ),
-              _c(
-                "v-uni-button",
-                {
-                  staticClass: _vm._$g(21, "sc"),
-                  attrs: { type: "default", _i: 21 },
-                  on: {
-                    click: function($event) {
-                      return _vm.$handleViewEvent($event)
-                    }
-                  }
-                },
-                [_vm._v("同意")]
+          _vm._$g(19, "i")
+            ? _c(
+                "v-uni-view",
+                { staticClass: _vm._$g(19, "sc"), attrs: { _i: 19 } },
+                [
+                  _c(
+                    "v-uni-view",
+                    { staticClass: _vm._$g(20, "sc"), attrs: { _i: 20 } },
+                    [
+                      _c(
+                        "v-uni-text",
+                        { staticClass: _vm._$g(21, "sc"), attrs: { _i: 21 } },
+                        [_vm._v(_vm._$g(21, "t0-0"))]
+                      ),
+                      _c(
+                        "v-uni-button",
+                        {
+                          staticClass: _vm._$g(22, "sc"),
+                          attrs: { type: "default", _i: 22 },
+                          on: {
+                            click: function($event) {
+                              return _vm.$handleViewEvent($event)
+                            }
+                          }
+                        },
+                        [_vm._v("不同意")]
+                      ),
+                      _c(
+                        "v-uni-button",
+                        {
+                          staticClass: _vm._$g(23, "sc"),
+                          attrs: { type: "default", _i: 23 },
+                          on: {
+                            click: function($event) {
+                              return _vm.$handleViewEvent($event)
+                            }
+                          }
+                        },
+                        [_vm._v("同意")]
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
               )
-            ],
-            1
-          )
+            : _vm._e()
         ],
         1
       )
@@ -1539,7 +1553,7 @@ if(false) {}
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../搜狗高速下载/HBuilderX.3.1.6.20210326/HBuilderX/plugins/uniapp-cli/node_modules/css-loader/dist/runtime/api.js */ 16);
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "\n.uni-list-cell-db {\n\t/* position: fixed;\n\ttop: 100px; */\n}\n.scroll-view-item_H {\n\twidth: 85px;\n\theight: 85px;\n\tborder: #007AFF solid 2px;\n\tmargin-right: 10px;\n\tdisplay: inline-block;\n}\n.mini-btn {\n\t/* position: fixed;\ntop: 90px; */\n}\n.screen {\n\t/* border: #007AFF solid 2px; */\n}\n", ""]);
+exports.push([module.i, "\n.uni-list-cell-db {\n\t\t/* position: fixed;\n\t\ttop: 100px; */\n}\n.context1{\n\t/* height: 1000px; */\n\t/* overflow-y: auto; */\n}\n.scroll-view-item_H {\n\t\twidth: 85px;\n\t\theight: 85px;\n\t\tborder: #007AFF solid 2px;\n\t\tmargin-right: 10px;\n\t\tdisplay: inline-block;\n}\n.popUp{\n\t\tposition:absolute;\n\t\tright:0;\n\t\tleft:0;\n\t\ttop:0px;\n\t\tbottom:0;\n\t\tbackground: #fff;\n\t\t/* border: #000000 2px solid; */\n\t\t/* display:flex; */\n\t\t/* align-items: auto; */\n\t\t/* margin: 0 auto; */\n\t\t/* width:100%; */\n}\n.popUp1{\n\t\tmargin:50px auto;\n\t\t/* align-items: auto; */\n\t\twidth:83%;\n\t\tborder: #000000 2px solid;\n}\n.screen {\n\t\t/* border: #007AFF solid 2px; */\n}\n", ""]);
 // Exports
 module.exports = exports;
 
