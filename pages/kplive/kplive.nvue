@@ -3,92 +3,69 @@
 		<view>
 			<!--  这里是状态栏 -->&nbsp;
 		</view>
-		<view>
+		<!-- 竖屏直播插件 -->
+		<live-pusher id='livePusher' local-mirror="enable" remote-mirror="true" ref="livePusher"
+			:style="{'height':screenHeight+'px'}" :url="luser.pushUrl" audio-volume-type="media" orientation="vertical"
+			mode="HD" :muted="false" :enable-camera="true" :auto-focus="true" :beauty="3" whiteness="3" aspect="9:16"
+			@statechange="statechange" @netstatus="netstatus" @error="error">
+			<!-- orientation="horizontal" -->
+		</live-pusher>
 
-			<!-- 横屏展示 -->
-			<!-- <live-pusher v-if="screen==1" id='livePusher' ref="livePusher" class="livePusher"
-				:style="{'height':isHeight+'px'}"
-				url="rtmp://livepush.kpszkj.cn/kplive/kp_wh?txSecret=c367684f4f99dcc9654b1f5503c41867&txTime=626D5CFF"
-				audio-volume-type="media" mode="SD" :muted="false" :enable-camera="true" :auto-focus="true" :beauty="3"
-				whiteness="3" aspect="1:1" @statechange="statechange" @netstatus="netstatus" @error="error">
-			</live-pusher> -->
-			<!-- 横屏-翻转摄像头 -->
-			<!-- <image v-if="!lState && screen==1" src="../../static/overturn.png" class="w_btn overturnBtn2"
-				@click="switchCamera">
-			</image> -->
-			<!-- 横屏-开始直播 -->
-			<!-- <text v-if="!lState && screen==1" class="w_live w_live2" id="w_live" size="mini" type="primary"
-				@click="start1">开始直播</text> -->
+		<!-- 竖屏-直播前用户信息 -->
+		<view v-if="liveStatus==0||liveStatus==1" class="lMess">
+			<image class="image" :src="luser.headPortrait"></image>
+			<text class="pcla pclaa">{{luser.nickName}}</text>
+		</view>
+		<!-- 竖屏-直播后用户信息 -->
+		<view v-if="liveStatus==2" class="lMess">
+			<image class="image" :src="luser.headPortrait"></image>
+			<text class="pcla">{{luser.nickName}}</text>
+			<view class="radiocla"></view>
+			<text class="pcla1">在线1.5w | 累计3.88w</text>
+		</view>
 
+		<!-- 竖屏-开始直播 -->
+		<!-- <view v-if="liveStatus==0" class="w_live" id="w_live" size="mini" type="primary" @click="countDown"> -->
+			<image v-if="liveStatus==0" class="w_liveImg" id="w_live" @click="countDown" src="../../static/logo.png"></image>
+		<!-- </view> -->
+		<!-- 竖屏-直播关闭 -->
+		<image v-if="liveStatus==2" src="../../static/close.png" class="closebtn w_btn" @click="popup"></image>
+		<!-- 竖屏-翻转摄像头 -->
+		<image v-if="liveStatus==0||liveStatus==2" src="../../static/qianzhi.png" class="overturnBtn w_btn"
+			@click="switchCamera">
+		</image>
+		<!-- 返回按钮 -->
+		<!-- <view class="returna"> -->
+			<image v-if="liveStatus==0" @click="back" class="returnaImg" src="../../static/black.png"></image>
+		<!-- </view> -->
+		<!-- 竖屏-直播分享 -->
+		<image v-if="liveStatus==-1" src="../../static/share.png" class="closebtn1 w_btn" @click="popup1()">
+		</image>
+		<!-- 竖屏-直播开始倒计时 -->
+		<text v-if="liveStatus==1" class="aaa">{{countNum}}</text>
+		<!-- 竖屏-直播计时器 -->
+		<!-- <text v-if="liveStatus==2" id="text" class="text">{{duration}}</text> -->
 
-			<!-- 竖屏展示 -->
-			<live-pusher v-if="screen==0" id='livePusher' local-mirror="enable" remote-mirror="true" ref="livePusher"
-				:style="{'height':isHeight+'px'}"
-				url="rtmp://livepush.kpszkj.cn/kplive/kp_wh?txSecret=c367684f4f99dcc9654b1f5503c41867&txTime=626D5CFF"
-				audio-volume-type="media" orientation="vertical" mode="SD" :muted="false" :enable-camera="true"
-				:auto-focus="true" :beauty="3" whiteness="3" aspect="1:1" @statechange="statechange"
-				@netstatus="netstatus" @error="error">
-				<!-- orientation="horizontal" -->
-			</live-pusher>
-			<!-- 竖屏-翻转摄像头 -->
-			<image v-if="!lState && screen==0" src="../../static/overturn.png" class="overturnBtn w_btn"
-				@click="switchCamera">
-			</image>
-			<!-- 竖屏-开始直播 -->
-			<text v-if="!lState && screen==0" class="w_live" id="w_live" size="mini" type="primary"
-				@click="start1">开始直播</text>
+		<!-- 竖屏-直播关闭弹窗 -->
+		<uni-popup ref="popup" type="dialog" class="popupClass" maskClick="false">
+			<uni-popup-dialog mode="base" class="popupClass" type="warn" title="退出直播" content="你确定要退出直播间吗？" message="成功消息" :before-close="true" @close="close1" @confirm="confirm"></uni-popup-dialog>
+		</uni-popup>
+		<!-- 竖屏-直播分享弹窗 -->
+		<uni-popup v-if="liveStatus==-1" ref="popup1" type="share" maskClick="false">
+			<uni-popup-share title="分享到" @select="select"></uni-popup-share>
+		</uni-popup>
+		<!-- 错误提示 -->
+		<uni-popup ref="error" type="bottom">
+			<uni-popup-message type="error" :message="error" :duration="1000"></uni-popup-message>
+		</uni-popup>
 
-			<!-- 竖屏-直播关闭 -->
-			<image v-if="lState" src="../../static/close.png" class="closebtn w_btn" @click="popup"></image>
-			<!-- 竖屏-直播关闭弹窗 -->
-			<uni-popup ref="popup" type="dialog" maskClick="false">
-				<uni-popup-dialog mode="base" type="warn" title="提示" content="是否关闭直播" message="成功消息" :duration="2000"
-					:before-close="true" @close="close1" @confirm="confirm"></uni-popup-dialog>
-			</uni-popup>
-
-			<!-- 竖屏-直播分享弹窗 -->
-			<uni-popup ref="popup1" type="share" maskClick="false">
-				<uni-popup-share title="分享到" @select="select"></uni-popup-share>
-			</uni-popup>
-
-			<!-- 竖屏-直播分享 -->
-			<image v-if="lState" src="../../static/share.png" class="closebtn1 w_btn" @click="popup1()"></image>
-			<!-- 竖屏-翻转摄像头 -->
-			<image v-if="lState" src="../../static/overturn.png" class="overturnBtn1 w_btn" @click="switchCamera">
-			</image>
-			<!-- 竖屏-直播倒计时 -->
-			<text v-if="isDown" class="aaa">{{dowNum}}</text>
-
-			<!-- 竖屏-直播计时器 -->
-			<text v-if="!lState" id="text" class="text">{{iTime}}</text>
-			<!-- <uni-countdown v-if="isDown" class="aaa" :show-day="false" @timeup="start" :second="3"></uni-countdown>
+		<!-- <uni-countdown v-if="isDown" class="aaa" :show-day="false" @timeup="start" :second="3"></uni-countdown>
 			<text v-if="!lState" class="closebtn" plain="true" @click="stop">×</text>
 			<button class="btn" @click="switchCamera">切换摄像头</button>
 			<button v-if="!lState" class="btn w_live" size="mini"  type="primary" @click="start">开始直播</button>
 			<button v-if="lState" class="btn closebtn" plain="true" @click="stop">×</button>
 			<view class="btnradio"  @click="stop"></view> -->
-
-			<!-- 横屏- -->
-			<!-- <view v-if="!lState && screen==1" class="lMess2">
-				<image class="image2" :src="srcUrl"></image>
-				<text class="qxt">主播 千小兔</text>
-			</view> -->
-			<!-- 竖屏-直播前用户信息 -->
-			<view v-if="!lState && screen==0" class="lMess">
-				<image class="image" :src="srcUrl"></image>
-				<text class="pcla pclaa">主播 千小兔</text>
-			</view>
-			<!-- 竖屏-直播后用户信息 -->
-			<view v-if="lState" class="lMess">
-				<image class="image" :src="srcUrl"></image>
-				<text class="pcla">主播 千小兔</text>
-				<view class="radiocla"></view>
-				<text class="pcla1">在线1.5w | 累计3.88w</text>
-			</view>
-			<!-- 返回按钮 -->
-			<button class="returna" @click="reClick">aaa</button>
-			
-			<!-- <button class="btn w_live" @click="start">結束直播</button>
+		<!-- <button class="btn w_live" @click="start">結束直播</button>
 			<button class="btn" @click="pause">暂停推流</button>
 			<button class="btn" @click="resume">resume</button>
 			<button class="btn" @click="stop">停止推流</button>
@@ -97,144 +74,243 @@
 			<button class="btn" @click="stopPreview">关闭摄像头预览</button>
 			<button class="btn" @click="switchCamera">切换摄像头</button> -->
 
-		</view>
+
 	</view>
 </template>
 <script>
 	export default {
 		data() {
 			return {
-				//屏幕方向 0竖屏 1横屏
-				screen: 0,
-				//直播状态
-				lState: false,
-				//屏幕高度
-				screenWidth: '',
-				//图片路径
-				srcUrl: 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/6acec660-4f31-11eb-a16f-5b3e54966275.jpg',
-				//倒计时
-				isDown: false,
-				dowNum: 4,
-				//获取屏幕高度
-				isHeight: 0,
+				//屏幕宽度
+				screenWidth: 0,
+				//屏幕宽度
+				screenHeight: 0,
+				//登录用户
+				luser: {},
+				//直播id
+				liveId: 0,
+				//直播时长
+				duration: '00:00:00',
 				//秒 分 时
 				s: 0,
 				m: 0,
 				h: 0,
-				iTime: '00:00:00',
+				//直播状态 0直播前 1倒计时 2直播中
+				liveStatus: 0,
+				//定时器id
 				timer: 0,
+				//倒计时数字
+				countNum: 3,
+				error: ""
 			}
 		},
 		onReady() {
-			console.log('000000竖屏直播页面')
+			//console.log('竖屏直播');
 			// 注意：需要在onReady中 或 onLoad 延时
-			this.context = uni.createLivePusherContext("livePusher", this);
-			this.startPreview();
-			this.info();
+			//plus.screen.lockOrientation('landscape-primary');
+			//初始化直播组件
+			this.init();
 		},
-		onBackPress(options) {//用户物理返回键
-		
-			if(this.lState == true){
+		onBackPress(options) {
+			//用户物理返回键
+			//console.log("竖屏直播返回");
+			//console.log(this.liveStatus);
+			if (this.liveStatus == 0) {
+				//console.log("直播前返回");
+			}
+			if (this.liveStatus == 1) {
+				//console.log("倒计时返回");
+				return true;
+			} else if (this.liveStatus == 2) {
+				//console.log("直播时返回");
+				this.$refs.popup.open();
 				return true;
 			}
-			// plus.screen.lockOrientation('portrait-primary');
-		    console.log("用户按下物理返回键");
-			
 		},
 		methods: {
-			info: function() {
-				console.log('Info111')
-				let that = this;
-				uni.getSystemInfo({
-					success: function(res) {
-						console.log(res.model);
-						console.log(res.pixelRatio);
-						console.log(res.windowWidth);
-						console.log(res.windowHeight);
-						console.log(res.language);
-						console.log(res.version);
-						console.log(res.platform);
-						that.isHeight = res.screenHeight - res.statusBarHeight - 2;
+			//获取设备信息
+			init: function() {
+				try {
+					const luser = uni.getStorageSync('luser');
+					if (luser) {
+						//console.log(luser);
+						this.luser = luser;
+						const liveId = uni.getStorageSync('liveId');
+						if (liveId) {
+							//console.log(liveId);
+							this.liveId = liveId;
+							let that = this;
+							uni.getSystemInfo({
+								success: function(res) {
+									that.screenHeight = res.screenHeight - res.statusBarHeight - 2;
+								}
+							});
+							this.context = uni.createLivePusherContext("livePusher", this);
+							this.startPreview();
+						}
+					} else {
+						//this.toLogin();
 					}
-				});
+				} catch (e) {
+					console.log('err' + e)
+				}
 			},
-			reClick() {
-				// plus.screen.lockOrientation('portrait-primary');
+			//返回按钮
+			back: function() {
+				console.log("直播前返回");
+				//plus.screen.lockOrientation('portrait-primary');
+				//console.log('竖屏返回');
 				uni.navigateBack({
-				    delta: 1
+					delta: 1
 				});
-				console.log('竖屏返回')
-			
 			},
-			finality() {
-				this.$emit('finish');
-			},
-			statechange(e) {
-				//console.log("statechange:" + JSON.stringify(e));
-			},
-			netstatus(e) {
-				// console.log("netstatus:" + JSON.stringify(e));
-			},
-			error(e) {
-				console.log("error:" + JSON.stringify(e));
-			},
-			start1() {
-				this.lState = true;
-				// timeOut();
-				this.countDown();
-			},
-			countDown() {
+			countDown: function() {
+				if (this.liveStatus == 0) {
+					this.liveStatus = 1;
+				}
 				// function timeOut() {
-				if (this.dowNum != 0) {
+				if (this.countNum != 0) {
 					let that = this
 					setTimeout(function() {
-						that.isDown = true;
-						that.dowNum--;
-						console.log(that.dowNum + 'aaa')
+						that.countNum--;
+						console.log('倒计时：' + that.countNum)
 						that.countDown();
 					}, 1000);
 				} else {
-					this.start()
+					this.start();
 				}
-				// }
+			},
+			popup: function() {
+				this.$refs.popup.open();
+			},
+			popup1: function() {
+				this.$refs.popup1.open();
+			},
+			close1: function(done) {
+				done();
+			},
+			confirm: function(done, value) {
+				this.stop();
+				clearInterval(this.timer);
+				console.log('结束时长' + this.duration);
+				done();
+			},
+
+
+			/* 直播组件相关 */
+			statechange: function(e) {
+				//console.log("statechange:" + JSON.stringify(e));
+			},
+			netstatus: function(e) {
+				// console.log("netstatus:" + JSON.stringify(e));
+			},
+			error: function(e) {
+				//console.log("error:" + JSON.stringify(e));
+			},
+			startPreview: function() {
+				this.context.startPreview({
+					success: (a) => {
+						//console.log("livePusher.startPreview:" + JSON.stringify(a));
+					}
+				});
+			},
+			switchCamera: function() {
+				this.context.switchCamera({
+					success: (a) => {
+						//console.log("livePusher.switchCamera:" + JSON.stringify(a));
+					}
+				});
 			},
 			start: function() {
 				this.context.start({
 					success: (a) => {
-						console.log("livePusher.start:" + JSON.stringify(a));
-						this.lState = true;
-						this.isDown = false;
+						uni.request({
+							url: 'http://192.168.0.110:8080/kp/live/start.do',
+							data: {
+								liveId: this.liveId,
+							},
+							header: {
+								//自定义请求头信息
+								//'custom-header': 'hello'
+							},
+							method: "GET",
+							success: (res) => {
+								console.log(res.data);
+								if (res.data.success) {
+									this.changeStatus();
+								} else {
+									this.error = res.data.message;
+									this.$refs.error.open();
+								}
+							}
+						});
+						//console.log("livePusher.start:" + JSON.stringify(a));
 
-
-						let that = this;
-						this.timer = setInterval(function() {
-							that.s++;
-							if (that.s > 59) {
-								that.s = 0;
-								that.m++;
-							}
-							if (that.m > 11) {
-								that.m = 0;
-								that.h++;
-							}
-							if (that.h > 23) {
-								that.m = 0;
-								that.s = 0;
-								// that.clearInterval(Timer);
-							}
-							that.iTime = that.h + ':' + that.m + ':' + that.s;
-							console.log('直播时间' + that.iTime)
-						}, 1000)
 					}
 				});
-
 			},
-			close: function() {
-				this.context.close({
+			changeStatus: function() {
+				this.liveStatus = 2;
+				let that = this;
+				this.timer = setInterval(function() {
+					that.s++;
+					if (that.s > 59) {
+						that.s = 0;
+						that.m++;
+					}
+					if (that.m > 11) {
+						that.m = 0;
+						that.h++;
+					}
+					if (that.h > 23) {
+						that.m = 0;
+						that.s = 0;
+					}
+					that.duration = that.h + ':' + that.m + ':' + that.s;
+					console.log('直播时间' + that.duration);
+				}, 1000)
+			},
+			stop: function() {
+				this.context.stop({
 					success: (a) => {
-						console.log("livePusher.close:" + JSON.stringify(a));
+						this.liveStatus = 3;
+						//console.log(JSON.stringify(a));
+						uni.request({
+							url: 'http://192.168.0.110:8080/kp/live/stop.do',
+							data: {
+								liveId: this.liveId,
+								duration: this.duration
+							},
+							header: {
+								//自定义请求头信息
+								//'custom-header': 'hello'
+							},
+							method: "GET",
+							success: (res) => {
+								//console.log(res.data);
+								if (res.data.success) {
+									uni.redirectTo({
+										url: "/pages/kplive/liveover?duration=" + this
+											.duration,
+										success: (a) => {
+											//console.log("livePusher.pause:" + JSON.stringify(a));
+										},
+										fail: (a) => {
+											//console.log(a);
+										}
+									});
+								} else {
+									this.error = res.data.message;
+									this.$refs.error.open();
+								}
+							}
+						});
 					}
 				});
+			},
+
+			/* finality: function() {
+				this.$emit('finish');
 			},
 			snapshot: function() {
 				this.context.snapshot({
@@ -256,50 +332,11 @@
 						console.log("livePusher.pause:" + JSON.stringify(a));
 					}
 				});
-			},
-			stop: function() {
-				this.context.stop({
+			}, 
+			close: function() {
+				this.context.close({
 					success: (a) => {
-						this.lState = false;
-						console.log(JSON.stringify(a));
-					}
-				});
-			},
-			popup() {
-				this.$refs.popup.open();
-
-
-			},
-			popup1() {
-				console.log('22')
-				this.$refs.popup1.open();
-			},
-			close1: function(done) {
-
-				done();
-			},
-			confirm: function(done, value) {
-				this.stop();
-				clearInterval(this.timer);
-				console.log('结束时长' + this.iTime);
-				// 输入框的值
-				console.log(value);
-				uni.redirectTo({
-					url: "/pages/kplive/over?iTime="+this.iTime+"&srcUrl="+this.srcUrl
-				});
-				done();
-			},
-			switchCamera: function() {
-				this.context.switchCamera({
-					success: (a) => {
-						console.log("livePusher.switchCamera:" + JSON.stringify(a));
-					}
-				});
-			},
-			startPreview: function() {
-				this.context.startPreview({
-					success: (a) => {
-						//console.log("livePusher.startPreview:" + JSON.stringify(a));
+						console.log("livePusher.close:" + JSON.stringify(a));
 					}
 				});
 			},
@@ -309,21 +346,35 @@
 						console.log("livePusher.stopPreview:" + JSON.stringify(a));
 					}
 				});
-			}
+			} */
 		}
 	}
 </script>
 
 <style>
-	.returna {
+	.popupClass{
+		/* height:260px; */
+	}
+	.returnaImg{
+		width:51px;
+		height:51px;
 		position: fixed;
-		top: 198px;
-		right: 30px;
-		background: rgba(0, 0, 0, 0.2);
+		bottom:50px;
+		left:50%;
+	}
+	.returna {
+		/* position: fixed;
+		left: 20px;
+		bottom: 20px;
+		background: rgba(255, 255, 255, 0.4);
+		width:52px;
+		height:52px;
+		border: 0px solid #000;
 		color: #ffffff;
-		font-size: 26px;
+		border-radius: 50%; */
 		/* border */
 	}
+
 	.text {
 		position: fixed;
 		right: 18px;
@@ -349,8 +400,8 @@
 	}
 
 	.w_btn {
-		width: 41px;
-		height: 41px;
+		width: 50px;
+		height: 50px;
 	}
 
 	.container {
@@ -366,9 +417,11 @@
 	}
 
 	.overturnBtn {
+		/* width:52px;
+		height:52px; */
 		position: fixed;
-		right: 18px;
-		top: 95px;
+		bottom:50px;
+		right:50%;
 
 	}
 
@@ -422,7 +475,7 @@
 		background: #d83b57;
 	}
 
-/* 	.image2 {
+	/* 	.image2 {
 		position: fixed;
 		top: 66px;
 		right: 20px;
@@ -433,28 +486,31 @@
 		transform: rotate(90deg);
 	} */
 
-	.overturnBtn1 {
+	.w_liveImg{
+		width:56px;
+		height:56px;
 		position: fixed;
-		right: 18px;
-		top: 170px;
+		bottom:50px;
+		left:150%;
 	}
-
 	.w_live {
-		background: #d83b57;
-		/* width:210px;
-		height:40px; */
+		/* background: #d83b57;
+		width:210px;
+		height:40px;
 		font-size: 16px;
 		border-radius: 50px;
-		/* display: flex; */
+		display: flex;
 		padding: 1px 90px;
 		text-align: center;
 		line-height: 40px;
 		color: #FFFFFF;
-		/* border: 0px solid #ffffff; */
 		position: fixed;
 		bottom: 85px;
-		margin: 0 50%;
-
+		margin: 0 50%; */
+		/* border: 0px solid #ffffff; */
+		position: fixed;
+		bottom:50px;
+		left:150%;
 	}
 
 	.closebtn {

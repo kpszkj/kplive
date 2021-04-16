@@ -1,0 +1,579 @@
+<template>
+	<view class="container">
+		<!--  这里是状态栏 -->
+		<!-- <view :style="{'height':stateHeight+'px'}">
+			&nbsp;
+		</view> -->
+		<view>
+
+			<!-- 横屏直播插件 -->
+			<live-pusher id='livePusher' ref="livePusher" class="livePusher" :style="{'height':screenHeight+'px'}"
+				:url="luser.pushUrl" audio-volume-type="media" orientation="horizontal" mode="HD" :muted="false"
+				:enable-camera="true" :auto-focus="true" :beauty="3" whiteness="3" aspect="16:9"
+				@statechange="statechange" @netstatus="netstatus" @error="error">
+			</live-pusher>
+
+			<!-- 横屏- -->
+			<view v-if="liveStatus==0||liveStatus==1" class="lMess2">
+				<image class="image2" :src="luser.headPortrait"></image>
+				<text class="qxt">{{luser.nickName}}</text>
+			</view>
+			<!-- 直播后用户信息 -->
+			<view v-if="liveStatus==2" class="lMess">
+				<image class="image" :src="luser.headPortrait"></image>
+				<text class="pcla">{{luser.nickName}}</text>
+				<view class="radiocla"></view>
+				<text class="pcla1">在线1.5w | 累计3.88w</text>
+			</view>
+
+			<!-- 横屏-开始直播 -->
+			<!-- <text v-if="liveStatus==0" class="w_live w_live2" id="w_live" size="mini" type="primary" @click="countDown">开始直播</text> -->
+			<image v-if="liveStatus==0" class="w_liveImg" id="w_live" @click="countDown" src="../../static/logo.png">
+			</image>
+			<!-- 直播关闭 -->
+			<image v-if="liveStatus==2" src="../../static/close.png" class="closebtn w_btn" @click="popup"></image>
+			<!-- 横屏-翻转摄像头 -->
+			<image v-if="liveStatus==0" src="../../static/qianzhi.png" class="w_btn overturnBtn2" @click="switchCamera">
+			</image>
+			<!-- 翻转摄像头 -->
+			<image v-if="liveStatus==2" src="../../static/qianzhi.png" class="w_btn overturnBtn" @click="switchCamera">
+			</image>
+			<!-- 返回按钮 -->
+			<!-- <button v-if="liveStatus==0" class="returna" @click="back">back</button> -->
+			<image v-if="liveStatus==0" @click="back" class="returnaImg" src="../../static/black.png"></image>
+			<!-- 直播分享 -->
+			<image v-if="liveStatus==-1" src="../../static/share.png" class="closebtn1 w_btn" @click="popup1()"></image>
+			<!-- 直播开始倒计时 -->
+			<text v-if="liveStatus==1" class="aaa">{{countNum}}</text>
+			<!-- 直播计时器 -->
+			<!-- <text v-if="liveStatus==2" id="text" class="text">{{duration}}</text> -->
+
+
+			<!-- 直播关闭弹窗 -->
+			<uni-popup ref="popup" type="dialog" maskClick="false">
+				<uni-popup-dialog mode="base" type="warn" title="提示" content="是否关闭直播" message="成功消息" :duration="2000"
+					:before-close="true" @close="close1" @confirm="confirm"></uni-popup-dialog>
+			</uni-popup>
+
+			<!-- 直播分享弹窗 -->
+			<uni-popup ref="popup1" type="share" maskClick="false">
+				<uni-popup-share title="分享到" @select="select"></uni-popup-share>
+			</uni-popup>
+			<!-- 错误提示 -->
+			<uni-popup ref="error" type="bottom">
+				<uni-popup-message type="error" :message="error" :duration="1000"></uni-popup-message>
+			</uni-popup>
+
+			<!-- <button class="btn w_live" @click="start">結束直播</button>
+			<button class="btn" @click="pause">暂停推流</button>
+			<button class="btn" @click="resume">resume</button>
+			<button class="btn" @click="stop">停止推流</button>
+			<button class="btn" @click="snapshot">快照</button>
+			<button class="btn" @click="startPreview">开启摄像头预览</button>
+			<button class="btn" @click="stopPreview">关闭摄像头预览</button>
+			<button class="btn" @click="switchCamera">切换摄像头</button> -->
+
+		</view>
+	</view>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				//屏幕宽度
+				screenWidth: 0,
+				//屏幕宽度
+				screenHeight: 0,
+				//登录用户
+				luser: {},
+				//直播id
+				liveId: 0,
+				//直播时长
+				duration: '00:00:00',
+				//秒 分 时
+				s: 0,
+				m: 0,
+				h: 0,
+				//直播状态 0直播前 1倒计时 2直播中
+				liveStatus: 0,
+				//定时器id
+				timer: 0,
+				//倒计时数字
+				countNum: 3,
+				error: ""
+			}
+		},
+		onReady() {
+			/* 切换横屏 */
+			// #ifdef APP-PLUS
+			plus.screen.lockOrientation('landscape-primary');
+			// #endif
+			// 注意：需要在onReady中 或 onLoad 延时
+			this.init();
+		},
+		onBackPress(options) {
+			//用户物理返回键
+			//console.log("竖屏直播返回");
+			//console.log(this.liveStatus);
+			if (this.liveStatus == 0) {
+				// #ifdef APP-PLUS
+				plus.screen.lockOrientation('portrait-primary');
+				// #endif
+				//console.log("直播前返回");
+			}
+			if (this.liveStatus == 1) {
+				//console.log("倒计时返回");
+				return true;
+			} else if (this.liveStatus == 2) {
+				//console.log("直播时返回");
+				this.$refs.popup.open();
+				return true;
+			}
+			//console.log("用户按下物理返回键");
+		},
+		methods: {
+			//获取设备信息
+			init: function() {
+				try {
+					const luser = uni.getStorageSync('luser');
+					if (luser) {
+						//console.log(luser);
+						this.luser = luser;
+						const liveId = uni.getStorageSync('liveId');
+						if (liveId) {
+							//console.log(liveId);
+							this.liveId = liveId;
+							let that = this;
+							uni.getSystemInfo({
+								success: function(res) {
+									that.screenHeight = res.screenWidth;
+								}
+							});
+							this.context = uni.createLivePusherContext("livePusher", this);
+							this.startPreview();
+						}
+					} else {
+						//this.toLogin();
+					}
+				} catch (e) {
+					console.log('err' + e)
+				}
+			},
+			//返回按钮
+			back: function() {
+				//plus.screen.lockOrientation('portrait-primary');
+				//console.log('竖屏返回');
+				// #ifdef APP-PLUS
+				plus.screen.lockOrientation('portrait-primary');
+				// #endif
+				uni.navigateBack({
+					delta: 1
+				});
+			},
+			countDown: function() {
+				if (this.liveStatus == 0) {
+					this.liveStatus = 1;
+				}
+				// function timeOut() {
+				if (this.countNum != 0) {
+					let that = this
+					setTimeout(function() {
+						that.countNum--;
+						console.log('倒计时：' + that.countNum)
+						that.countDown();
+					}, 1000);
+				} else {
+					this.start();
+				}
+			},
+			popup: function() {
+				this.$refs.popup.open();
+			},
+			popup1: function() {
+				this.$refs.popup1.open();
+			},
+			close1: function(done) {
+				done();
+			},
+			confirm: function(done, value) {
+				this.stop();
+				clearInterval(this.timer);
+				console.log('结束时长' + this.duration);
+				done();
+			},
+
+
+			/* 直播组件相关 */
+			statechange: function(e) {
+				//console.log("statechange:" + JSON.stringify(e));
+			},
+			netstatus: function(e) {
+				// console.log("netstatus:" + JSON.stringify(e));
+			},
+			error: function(e) {
+				//console.log("error:" + JSON.stringify(e));
+			},
+			startPreview: function() {
+				this.context.startPreview({
+					success: (a) => {
+						//console.log("livePusher.startPreview:" + JSON.stringify(a));
+					}
+				});
+			},
+			switchCamera: function() {
+				this.context.switchCamera({
+					success: (a) => {
+						//console.log("livePusher.switchCamera:" + JSON.stringify(a));
+					}
+				});
+			},
+			start: function() {
+				this.context.start({
+					success: (a) => {
+						uni.request({
+							url: 'http://192.168.0.110:8080/kp/live/start.do',
+							data: {
+								liveId: this.liveId,
+							},
+							header: {
+								//自定义请求头信息
+								//'custom-header': 'hello'
+							},
+							method: "GET",
+							success: (res) => {
+								console.log(res.data);
+								if (res.data.success) {
+									this.changeStatus();
+								} else {
+									this.error = res.data.message;
+									this.$refs.error.open();
+								}
+							}
+						});
+						//console.log("livePusher.start:" + JSON.stringify(a));
+
+					}
+				});
+			},
+			changeStatus: function() {
+				this.liveStatus = 2;
+				let that = this;
+				this.timer = setInterval(function() {
+					that.s++;
+					if (that.s > 59) {
+						that.s = 0;
+						that.m++;
+					}
+					if (that.m > 11) {
+						that.m = 0;
+						that.h++;
+					}
+					if (that.h > 23) {
+						that.m = 0;
+						that.s = 0;
+					}
+					that.duration = that.h + ':' + that.m + ':' + that.s;
+					console.log('直播时间' + that.duration);
+				}, 1000)
+			},
+			stop: function() {
+				this.context.stop({
+					success: (a) => {
+						this.liveStatus = 3;
+						//console.log(JSON.stringify(a));
+						uni.request({
+							url: 'http://192.168.0.110:8080/kp/live/stop.do',
+							data: {
+								liveId: this.liveId,
+								duration: this.duration
+							},
+							header: {
+								//自定义请求头信息
+								//'custom-header': 'hello'
+							},
+							method: "GET",
+							success: (res) => {
+								//console.log(res.data);
+								if (res.data.success) {
+									// #ifdef APP-PLUS
+									plus.screen.lockOrientation('portrait-primary');
+									// #endif
+									uni.redirectTo({
+										url: "/pages/kplive/liveover?duration=" + this
+											.duration,
+										success: (a) => {
+											//console.log("livePusher.pause:" + JSON.stringify(a));
+										},
+										fail: (a) => {
+											//console.log(a);
+										}
+									});
+								} else {
+									this.error = res.data.message;
+									this.$refs.error.open();
+								}
+							}
+						});
+					}
+				});
+			},
+
+			/* finality: function() {
+				this.$emit('finish');
+			},
+			snapshot: function() {
+				this.context.snapshot({
+					success: (e) => {
+						console.log(JSON.stringify(e));
+					}
+				});
+			},
+			resume: function() {
+				this.context.resume({
+					success: (a) => {
+						console.log("livePusher.resume:" + JSON.stringify(a));
+					}
+				});
+			},
+			pause: function() {
+				this.context.pause({
+					success: (a) => {
+						console.log("livePusher.pause:" + JSON.stringify(a));
+					}
+				});
+			}, 
+			close: function() {
+				this.context.close({
+					success: (a) => {
+						console.log("livePusher.close:" + JSON.stringify(a));
+					}
+				});
+			},
+			stopPreview: function() {
+				this.context.stopPreview({
+					success: (a) => {
+						console.log("livePusher.stopPreview:" + JSON.stringify(a));
+					}
+				});
+			} */
+		}
+	}
+</script>
+
+<style>
+	.w_liveImg {
+		width: 56px;
+		height: 56px;
+		position: fixed;
+		bottom: 50px;
+		left: 350%;
+		width: 56px;
+		height: 56px;
+
+	}
+
+	.returnaImg {
+		width: 51px;
+		height: 51px;
+		position: fixed;
+		bottom: 50px;
+		left: 200%;
+		width: 56px;
+		height: 56px;
+	}
+
+	.text {
+		position: fixed;
+		right: 210px;
+		top: 60px;
+		font-size: 21px;
+		padding: 5px 10px;
+		color: #424242;
+		background: rgba(255, 255, 255, 0.3);
+
+	}
+
+	.aaa {
+		position: fixed;
+		top: 145px;
+		left: 330px;
+		padding: 5px 30px;
+		font-size: 80px;
+		border-radius: 100%;
+		text-align: center;
+		color: #e4a951;
+		border: 2px solid #e4a951;
+		background: rgba(255, 255, 255, 0.3);
+	}
+
+	.returna {
+		position: fixed;
+		top: 58px;
+		left: 50px;
+		background: rgba(0, 0, 0, 0.2);
+		color: #ffffff;
+		font-size: 26px;
+		/* border */
+	}
+
+	.w_btn {
+		width: 41px;
+		height: 41px;
+	}
+
+	.overturnBtn2 {
+		position: fixed;
+		bottom: 50px;
+		right: 200%;
+		width: 56px;
+		height: 56px;
+		/* transform: rotate(90deg); */
+
+	}
+
+	.container {
+		border-bottom-color: #000000;
+		border-bottom-width: 1px;
+	}
+
+	.overturnBtn {
+		position: fixed;
+		top: 112px;
+		right: 18px;
+		/* width:56px;
+		height:56px; */
+
+	}
+
+	.w_live2 {
+		/* transform: rotate(90deg); */
+		background: #d83b57;
+		font-size: 16px;
+		border-radius: 50px;
+		padding: 2px 90px;
+		text-align: center;
+		line-height: 40px;
+		color: #FFFFFF;
+		position: fixed;
+		right: 330px;
+		bottom: 20px;
+
+	}
+
+	.qxt {
+		/* transform: rotate(90deg); */
+		position: fixed;
+		color: #FFFFFF;
+		top: 62px;
+		right: 68px;
+	}
+
+	.image2 {
+		position: fixed;
+		top: 53px;
+		right: 23px;
+		border: 1px solid #ffffff;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		/* transform: rotate(90deg); */
+	}
+
+	.lMess2 {
+		position: fixed;
+		/* transform: rotate(90deg); */
+		top: 50px;
+		right: 20px;
+		border-radius: 50px;
+		width: 180%;
+		height: 46px;
+		background: #d83b57;
+	}
+
+
+	.overturnBtn1 {
+		position: fixed;
+		right: 18px;
+		top: 170px;
+	}
+
+	.w_live {
+		background: #d83b57;
+		font-size: 16px;
+		border-radius: 50px;
+		padding: 1px 90px;
+		text-align: center;
+		line-height: 40px;
+		color: #FFFFFF;
+		position: fixed;
+		bottom: 85px;
+		margin: 0 50%;
+
+	}
+
+	.closebtn {
+		position: fixed;
+		right: 18px;
+		top: 60px;
+	}
+
+	.closebtn1 {
+		position: fixed;
+		right: 18px;
+		top: 115px;
+	}
+
+	.lMess {
+		position: fixed;
+		top: 60px;
+		left: 18px;
+		border-radius: 50px;
+		width: 180%;
+		height: 46px;
+		background: #d83b57;
+	}
+
+
+	.image {
+		position: fixed;
+		top: 63px;
+		left: 21px;
+		border: 1px solid #ffffff;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+	}
+
+	.pcla {
+		position: fixed;
+		top: 65px;
+		left: 68px;
+		font-size: 13px;
+		color: #FFFFFF;
+	}
+
+	.pclaa {
+		position: fixed;
+		top: 75px;
+		left: 68px;
+		font-size: 15px;
+	}
+
+	.pcla1 {
+		position: fixed;
+		top: 86px;
+		left: 76px;
+		font-size: 11px;
+		color: #FFFFFF;
+	}
+
+	.radiocla {
+		position: fixed;
+		top: 90px;
+		left: 68px;
+		width: 5px;
+		height: 5px;
+		background: #ffba61;
+		border-radius: 50%;
+	}
+</style>
