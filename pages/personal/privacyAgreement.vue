@@ -9,7 +9,7 @@
 	export default {
 		data() {
 			return {
-				context:`
+				context: `
 				《鲲鹏live直播用户隐私协议 》
 				
 				特别提示
@@ -93,29 +93,29 @@
 			若您和我们发生任何纠纷或争议，首先应友好协商解决；
 			如果您对本隐私协议有任何疑问、意见或建议，您可以通过我的-关于我们-获取我们的联系方式以便联系我们。
 			`
-			
-			
+
+
 			}
 		},
 		onReady() {
-			//将data存储在本地缓存中指定的key中
+			/* //将data存储在本地缓存中指定的key中
 			try {
-			    uni.setStorageSync('context', this.context);
+				uni.setStorageSync('context', this.context);
 			} catch (e) {
-			    console.log('err'+e)
+				console.log('err' + e)
 			}
 			//从本地缓存中同步获取指定 key 对应的内容
 			try {
-			    const value = uni.getStorageSync('context');
-			    if (value) {
-			        console.log(value);
-			    }
+				const value = uni.getStorageSync('context');
+				if (value) {
+					console.log(value);
+				}
 			} catch (e) {
-			    console.log('err'+e)
-			}
+				console.log('err' + e)
+			} */
 		},
 		methods: {
-			
+
 		}
 	}
 </script>
