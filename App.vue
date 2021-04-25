@@ -3,7 +3,7 @@
 		onLaunch: function() {
 			//console.log('App Launch');
 			//#ifdef APP-PLUS  
-			var url = "http://192.168.0.110:8080/kp/live/appUpdate.do"; //检查更新地址  
+			var url = "http://www.kpszkj.cn/live/appUpdate.do"; //检查更新地址  
 			var appid = plus.runtime.appid;
 			var version = plus.runtime.versionCode;
 			//console.log(appid);

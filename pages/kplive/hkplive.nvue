@@ -8,14 +8,15 @@
 
 			<!-- 横屏直播插件 -->
 			<live-pusher id='livePusher' ref="livePusher" class="livePusher" :style="{'height':screenHeight+'px'}"
-				:url="luser.pushUrl" audio-volume-type="media" orientation="horizontal" mode="HD" :muted="false"
-				:enable-camera="true" :auto-focus="true" :beauty="3" whiteness="3" aspect="1:1"
+				:url="src" audio-volume-type="media" orientation="horizontal" mode="HD" :muted="false"
+				:enable-camera="true" :auto-focus="true" :beauty="3" whiteness="3" aspect="16:9"
 				@statechange="statechange" @netstatus="netstatus" @error="error">
 			</live-pusher>
 
 			<!-- 横屏- -->
+			<!-- 直播前用户信息 -->
 			<view v-if="liveStatus==0||liveStatus==1" class="lMess2">
-				<image class="image2" :src="luser.headPortrait"></image>
+				<image class="image" :src="luser.headPortrait"></image>
 				<text class="qxt">{{luser.nickName}}</text>
 			</view>
 			<!-- 直播后用户信息 -->
@@ -27,34 +28,31 @@
 			</view>
 
 			<!-- 横屏-开始直播 -->
-			<text v-if="liveStatus==0" class="w_live w_live2" id="w_live" size="mini" type="primary"
-				@click="countDown">开始直播</text>
-			<!-- 直播关闭 -->
-			<image v-if="liveStatus==2" src="../../static/close.png" class="closebtn w_btn" @click="popup"></image>
-			<!-- 横屏-翻转摄像头 -->
-			<image v-if="liveStatus==0||liveStatus==2" src="../../static/overturn.png" class="w_btn overturnBtn2"
-				@click="switchCamera">
+			<!-- <text v-if="liveStatus==0" class="w_live w_live2" id="w_live" size="mini" type="primary" @click="countDown">开始直播</text> -->
+			<image v-if="liveStatus==0" class="w_btn w_liveImg" id="w_live" @click="countDown"
+				src="../../static/logo.png">
 			</image>
-			<!-- 翻转摄像头 -->
-			<image v-if="liveStatus==-1" src="../../static/overturn.png" class="w_btn overturnBtn1"
+			<!-- 直播关闭 -->
+			<image v-if="liveStatus==2" src="../../static/close.png" class="w_btn closebtn" @click="popup"></image>
+			<!-- 横屏-翻转摄像头 -->
+			<image v-if="liveStatus==0||liveStatus==2" src="../../static/switch.png" class="w_btn overturnBtn"
 				@click="switchCamera">
 			</image>
 			<!-- 返回按钮 -->
-			<button v-if="liveStatus==0" class="returna" @click="back">back</button>
+			<image v-if="liveStatus==0" @click="back" class="w_btn returnaImg" src="../../static/back.png"></image>
 			<!-- 直播分享 -->
-			<image v-if="liveStatus==-1" src="../../static/share.png" class="closebtn1 w_btn" @click="popup1()"></image>
+			<image v-if="liveStatus==-1" src="../../static/share.png" class="w_btn closebtn1" @click="popup1()"></image>
 			<!-- 直播开始倒计时 -->
-			<text v-if="liveStatus==1" class="aaa">{{countNum}}</text>
+			<text v-if="liveStatus==1&&countNum>0" class="aaa"
+				:style="{'font-size':fontSize+'px','opacity':opacity/10}">{{countNum}}</text>
 			<!-- 直播计时器 -->
-			<text v-if="liveStatus==2" id="text" class="text">{{duration}}</text>
-
+			<!-- <text v-if="liveStatus==2" id="text" class="text">{{duration}}</text> -->
 
 			<!-- 直播关闭弹窗 -->
 			<uni-popup ref="popup" type="dialog" maskClick="false">
 				<uni-popup-dialog mode="base" type="warn" title="提示" content="是否关闭直播" message="成功消息" :duration="2000"
 					:before-close="true" @close="close1" @confirm="confirm"></uni-popup-dialog>
 			</uni-popup>
-
 			<!-- 直播分享弹窗 -->
 			<uni-popup ref="popup1" type="share" maskClick="false">
 				<uni-popup-share title="分享到" @select="select"></uni-popup-share>
@@ -80,6 +78,7 @@
 	export default {
 		data() {
 			return {
+				src: "",
 				//屏幕宽度
 				screenWidth: 0,
 				//屏幕宽度
@@ -98,7 +97,11 @@
 				liveStatus: 0,
 				//定时器id
 				timer: 0,
+				//定时器2id
+				timer2: 0,
 				//倒计时数字
+				fontSize: 50,
+				opacity: 10,
 				countNum: 3,
 				error: ""
 			}
@@ -122,8 +125,11 @@
 				//console.log("直播前返回");
 			}
 			if (this.liveStatus == 1) {
+				// #ifdef APP-PLUS
+				plus.screen.lockOrientation('portrait-primary');
+				// #endif
 				//console.log("倒计时返回");
-				return true;
+				//return true;
 			} else if (this.liveStatus == 2) {
 				//console.log("直播时返回");
 				this.$refs.popup.open();
@@ -143,6 +149,8 @@
 						if (liveId) {
 							//console.log(liveId);
 							this.liveId = liveId;
+							this.src = this.luser.pushUrl + '&liveId=' + this.liveId;
+							//console.log(this.src);
 							let that = this;
 							uni.getSystemInfo({
 								success: function(res) {
@@ -173,16 +181,28 @@
 			countDown: function() {
 				if (this.liveStatus == 0) {
 					this.liveStatus = 1;
+					var that = this;
+					this.timer2 = setInterval(function() {
+						that.fontSize += 10;
+						that.opacity = that.opacity - 1;
+						if (that.fontSize == 150) {
+							that.fontSize = 50;
+						}
+						if (that.opacity == 0) {
+							that.opacity = 10;
+						}
+					}.bind(that), 100)
 				}
 				// function timeOut() {
 				if (this.countNum != 0) {
 					let that = this
 					setTimeout(function() {
 						that.countNum--;
-						console.log('倒计时：' + that.countNum)
+						//console.log('倒计时：' + that.countNum)
 						that.countDown();
 					}, 1000);
 				} else {
+					clearInterval(this.timer2);
 					this.start();
 				}
 			},
@@ -198,7 +218,7 @@
 			confirm: function(done, value) {
 				this.stop();
 				clearInterval(this.timer);
-				console.log('结束时长' + this.duration);
+				//console.log('结束时长' + this.duration);
 				done();
 			},
 
@@ -231,7 +251,7 @@
 				this.context.start({
 					success: (a) => {
 						uni.request({
-							url: 'http://192.168.0.110:8080/kp/live/start.do',
+							url: 'http://www.kpszkj.cn/live/start.do',
 							data: {
 								liveId: this.liveId,
 							},
@@ -241,7 +261,7 @@
 							},
 							method: "GET",
 							success: (res) => {
-								console.log(res.data);
+								//console.log(res.data);
 								if (res.data.success) {
 									this.changeStatus();
 								} else {
@@ -273,7 +293,7 @@
 						that.s = 0;
 					}
 					that.duration = that.h + ':' + that.m + ':' + that.s;
-					console.log('直播时间' + that.duration);
+					//console.log('直播时间' + that.duration);
 				}, 1000)
 			},
 			stop: function() {
@@ -282,7 +302,7 @@
 						this.liveStatus = 3;
 						//console.log(JSON.stringify(a));
 						uni.request({
-							url: 'http://192.168.0.110:8080/kp/live/stop.do',
+							url: 'http://www.kpszkj.cn/live/stop.do',
 							data: {
 								liveId: this.liveId,
 								duration: this.duration
@@ -361,28 +381,39 @@
 </script>
 
 <style>
-	.text {
-		position: fixed;
-		right: 210px;
-		top: 60px;
-		font-size: 21px;
-		padding: 5px 10px;
-		color: #424242;
-		background: rgba(255, 255, 255, 0.3);
+	.w_btn {
+		width: 50px;
+		height: 50px;
+	}
 
+	.w_liveImg {
+		position: fixed;
+		bottom: 30px;
+		right: 30px;
+	}
+
+	.returnaImg {
+		position: fixed;
+		top: 50px;
+		right: 30px;
 	}
 
 	.aaa {
 		position: fixed;
-		top: 145px;
-		left: 330px;
-		padding: 5px 30px;
-		font-size: 80px;
-		border-radius: 100%;
+		width: 150px;
+		height: 150px;
+		line-height: 150px;
+		top: 100px;
+		left: 350px;
+		font-weight: bold;
 		text-align: center;
-		color: #e4a951;
-		border: 2px solid #e4a951;
-		background: rgba(255, 255, 255, 0.3);
+		color: #FFFFFF;
+		/* color: #e4a951;
+		font-size: 80px;
+		padding: 5px 30px;
+		border-radius: 100%;
+		//background: rgba(255, 255, 255, 0.3);
+		border: 2px solid #e4a951;*/
 	}
 
 	.returna {
@@ -395,19 +426,6 @@
 		/* border */
 	}
 
-	.w_btn {
-		width: 41px;
-		height: 41px;
-	}
-
-	.overturnBtn2 {
-		position: fixed;
-		top: 55px;
-		left: 80px;
-		/* transform: rotate(90deg); */
-
-	}
-
 	.container {
 		border-bottom-color: #000000;
 		border-bottom-width: 1px;
@@ -415,9 +433,8 @@
 
 	.overturnBtn {
 		position: fixed;
-		right: 18px;
-		top: 95px;
-
+		right: 30px;
+		bottom: 100px;
 	}
 
 	.w_live2 {
@@ -435,30 +452,21 @@
 
 	}
 
-	.qxt {
-		/* transform: rotate(90deg); */
-		position: fixed;
-		color: #FFFFFF;
-		top: 62px;
-		right: 68px;
-	}
-
-	.image2 {
-		position: fixed;
-		top: 53px;
-		right: 23px;
-		border: 1px solid #ffffff;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		/* transform: rotate(90deg); */
-	}
-
 	.lMess2 {
 		position: fixed;
 		/* transform: rotate(90deg); */
 		top: 50px;
-		right: 20px;
+		left: 20px;
+		border-radius: 50px;
+		width: 180%;
+		height: 46px;
+		background: #d83b57;
+	}
+
+	.lMess {
+		position: fixed;
+		top: 50px;
+		left: 20px;
 		border-radius: 50px;
 		width: 180%;
 		height: 46px;
@@ -466,11 +474,69 @@
 	}
 
 
-	.overturnBtn1 {
+
+	.image {
+		position: fixed;
+		top: 53px;
+		left: 22px;
+		border: 1px solid #ffffff;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+	}
+
+
+	.qxt {
+		/* transform: rotate(90deg); */
+		position: fixed;
+		color: #FFFFFF;
+		top: 63px;
+		left: 68px;
+		font-size: 18px;
+	}
+
+
+	.pcla {
+		position: fixed;
+		top: 60px;
+		left: 68px;
+		font-size: 13px;
+		color: #FFFFFF;
+	}
+
+	.pclaa {
+		position: fixed;
+		top: 70px;
+		left: 68px;
+		font-size: 15px;
+	}
+
+	.pcla1 {
+		position: fixed;
+		top: 80px;
+		left: 76px;
+		font-size: 11px;
+		color: #FFFFFF;
+	}
+
+
+	.radiocla {
+		position: fixed;
+		top: 84px;
+		left: 68px;
+		width: 5px;
+		height: 5px;
+		background: #ffba61;
+		border-radius: 50%;
+	}
+
+
+
+	/* .overturnBtn1 {
 		position: fixed;
 		right: 18px;
 		top: 170px;
-	}
+	} */
 
 	.w_live {
 		background: #d83b57;
@@ -483,72 +549,21 @@
 		position: fixed;
 		bottom: 85px;
 		margin: 0 50%;
-
 	}
 
 	.closebtn {
 		position: fixed;
-		right: 18px;
+		top: 50px;
+		right: 30px;
+	}
+
+	.text {
+		position: fixed;
+		right: 210px;
 		top: 60px;
-	}
-
-	.closebtn1 {
-		position: fixed;
-		right: 18px;
-		top: 115px;
-	}
-
-	.lMess {
-		position: fixed;
-		top: 60px;
-		left: 18px;
-		border-radius: 50px;
-		width: 180%;
-		height: 46px;
-		background: #d83b57;
-	}
-
-
-	.image {
-		position: fixed;
-		top: 63px;
-		left: 21px;
-		border: 1px solid #ffffff;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-	}
-
-	.pcla {
-		position: fixed;
-		top: 65px;
-		left: 68px;
-		font-size: 13px;
-		color: #FFFFFF;
-	}
-
-	.pclaa {
-		position: fixed;
-		top: 75px;
-		left: 68px;
-		font-size: 15px;
-	}
-
-	.pcla1 {
-		position: fixed;
-		top: 86px;
-		left: 76px;
-		font-size: 11px;
-		color: #FFFFFF;
-	}
-
-	.radiocla {
-		position: fixed;
-		top: 90px;
-		left: 68px;
-		width: 5px;
-		height: 5px;
-		background: #ffba61;
-		border-radius: 50%;
+		font-size: 21px;
+		padding: 5px 10px;
+		color: #424242;
+		background: rgba(255, 255, 255, 0.3);
 	}
 </style>

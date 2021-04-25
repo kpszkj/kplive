@@ -1,19 +1,26 @@
 <template>
 	<view>
 
-		<view>
-			<switch @change="switch2Change" />是否推送直播到云平台
+		<view class="fontClass">
+			是否推送到云平台
+			<switch class="rightC" style="transform:scale(0.9)" @change="switch2Change" color="#f3304b"
+				checked="true" />
 		</view>
 
 		<!-- 直播清晰度 （标清 高清）SD（标清）, HD（高清）, FHD（超清）。 -->
 
-		<label>
-			<checkbox value="cb" name="a" checked="true" />标清
-			<checkbox value="cb" name="a" />高清
-		</label>
-		
-		
-		
+		<view class="fontClass">
+			<text>直播清晰度</text>
+			<label class="rightC">
+				标清
+				<checkbox style="transform:scale(0.7)" color="#f3304b" value="cb" name="a" />&nbsp;
+				高清
+				<checkbox style="transform:scale(0.7)" color="#f3304b" value="cb" name="a" checked="true" />
+			</label>
+		</view>
+
+
+
 	</view>
 </template>
 
@@ -27,12 +34,25 @@
 		},
 		methods: {
 			switch2Change: function(e) {
-				console.log('switch2 发生事件', e.target.value)
+				//console.log('switch2 发生事件', e.target.value)
 			}
 		}
 	}
 </script>
 
 <style>
+	.rightC {
+		font-size: 14px;
+		float: right;
+		margin-right: 15px;
+		color: #777;
+	}
 
+	.fontClass {
+		font-size: 16px;
+		color: #555555;
+		margin: 18px 15px 0px 15px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid #E1E1E1;
+	}
 </style>
