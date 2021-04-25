@@ -3,7 +3,7 @@
 		onLaunch: function() {
 			//console.log('App Launch');
 			//#ifdef APP-PLUS  
-			var url = "http://192.168.0.110:8080/kp/live/appUpdate.do"; //检查更新地址  
+			var url = "http://www.kpszkj.cn/live/appUpdate.do"; //检查更新地址  
 			var appid = plus.runtime.appid;
 			var version = plus.runtime.versionCode;
 			//console.log(appid);
@@ -20,7 +20,7 @@
 					if (res.data.appid == appid && parseInt(res.data.Android.version) > version) {
 						//console.log(res.data);
 						var appUrl = res.data.Android.url;
-						uni.showModal({ //提醒用户更新  
+						uni.showModal({ //提醒用户更新
 							title: "更新提示",
 							content: res.data.Android.note,
 							cancelText: "暂不更新",
@@ -39,7 +39,7 @@
 				error: (res) => {
 					console.log(res.data);
 				}
-			})
+			});
 			//#endif  
 		},
 		methods: {

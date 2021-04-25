@@ -9,14 +9,13 @@
 	}, {
 		"path": "pages/index/login",
 		"style": {
-			"navigationBarTextStyle": "black",
+			"navigationBarTextStyle": "white",
 			"navigationStyle": "custom",
 			"enablePullDownRefresh": false
 		}
 	}, {
 		"path": "pages/index/personal",
 		"style": {
-			"navigationBarTextStyle": "black",
 			"navigationStyle": "custom",
 			"enablePullDownRefresh": false
 		}
@@ -31,14 +30,13 @@
 		"path": "pages/kplive/hkplive",
 		"style": {
 			"navigationStyle": "custom",
-			"navigationBarTitleText": "",
 			"enablePullDownRefresh": false
 		}
 
 	}, {
 		"path": "pages/kplive/liveover",
 		"style": {
-			"navigationBarTitleText": "直播结束",
+			"navigationStyle": "custom",
 			"enablePullDownRefresh": false
 		}
 	}, {
@@ -75,12 +73,12 @@
 		}
 	}],
 	"globalStyle": {
-		"navigationBarBackgroundColor": "#333333",
+		"navigationBarBackgroundColor": "#353637",
 		"navigationBarTextStyle": "white",
 		"navigationBarTitleText": "鲲鹏live",
 		"app-plus": {
 			"titleNView": [{
-				"backgroundColor": "#666666"
+				"backgroundColor": "#353637"
 			}]
 		}
 	},

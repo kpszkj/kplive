@@ -1,54 +1,66 @@
 <template>
-	<view class="container">
+	<view class="container pageBackground" :style="{'height':screenHeight+'px'}">
 		<view class="status_bar">
 			<!--  这里是状态栏 -->
 			&nbsp;
 		</view>
 		<!-- 页面内容 -->
-		<!-- :style="{'height':isHeight+'px'}" -->
+		<!-- :style="{'height':screenHeight+'px'}" -->
 		<view>
 			<!-- 分类列表 -->
 			<!-- {{liveCategoryList}} -->
-			<view v-if="liveCategoryList.length>0">
+			<view class="liveClass">
 				<view>
 					<view>
-						<text>类别：</text>
-						<picker style="display: inline-block;" mode="selector" :range="liveCategoryList"
-							range-key="name" :value="caIndex" @change="bindPickerChange">
+						<text>直播类别:</text>
+						<picker v-if="liveCategoryList.length>0" style="display: inline-block;" mode="selector"
+							:range="liveCategoryList" range-key="name" :value="caIndex" @change="bindPickerChange">
 							<view>{{liveCategoryList[caIndex].name}}</view>
 						</picker>
 					</view>
 				</view>
 			</view>
 			<!-- 选择封面图 -->
-			<text>封面：</text><button class="mini-btn" type="default" @click="cover" size="mini">选择封面</button>
-			<!-- 封面弹窗 -->
-			<uni-popup ref="popup" type="center">
-				<!-- <form @submit="formSubmit" @reset="formReset"> -->
-				<view class="uni-padding-wrap uni-common-mt">
-					<view class="scroll-view_H">
-						<image v-for="(img,index) in imgList" @click="setImg(img,index)" class="scroll-view-item_H"
-							:src="img">
-						</image>
-					</view>
-				</view>
-				<!-- </form> -->
-			</uni-popup>
-			<image :src="img"></image>
+			<view class="mini-btn coverBtn" type="default" @click="cover" size="mini">
+				<image :src="img" class="coverPhoto" v-show="img!=' '"></image>
+				<image src="../../static/pic7.png" v-show="img==' '" class="coverIcon"></image>
+				<view v-show="img==' '">设置封面</view>
+			</view>
+
 			<!-- 填写标题 -->
 			<view class="uni-form-item uni-column">
 				<!--  focus 点击页面光标定位 -->
-				<text>标题：</text><input class="uni-input" @blur="onInput" v-model="title" placeholder="填写直播标题" />
+				<!-- <text>标题：</text> -->
+				<input maxlength="20" class="uni-input nameClass" @blur="onInput1" v-model="title"
+					placeholder="在此处输入直播标题(20字以内)" />
+				<view class="desc">
+					<image src="../../static/pic6.png"></image>
+					<text>直播描述：</text>
+					<textarea maxlength="100" class="uni-input" @blur="onInput2" v-model="desc"
+						placeholder="在此处输入直播描述(100字以内/非必填)" />
+				</view>
 			</view>
 
-			<picker @change="orientationChange" :value="orientation" :range="orientationList">
+			<!-- <picker @change="orientationChange" :value="orientation" :range="orientationList">
 				<view class="uni-input">{{orientationList[orientation]}}</view>
-			</picker>
+			</picker> -->
+			<view class="hsScreen">
+				<view @click="orientationChange(1)" class="uni-input hScreen">
+					<image v-show="orientation==0" src="../../static/pic3.png"></image>
+					<image v-show="orientation==1" src="../../static/pic4.png"></image>
+					<text>{{orientationList[1]}}</text>
+				</view>
+				<view @click="orientationChange(0)" class="uni-input hScreen">
+					<image v-show="orientation==1" src="../../static/pic1.png"></image>
+					<image v-show="orientation==0" src="../../static/pic2.png"></image>
+					<text>{{orientationList[0]}}</text>
+				</view>
+			</view>
 
 			<!-- <uni-link :href="href" :text="href"></uni-link> -->
 			<!--  url="/pages/kplive/kplive" -->
-			<button @click="ready()" type="default" v-if="this.liveStatus==0">开始直播</button>
-			<button @click="ready()" type="default" v-if="this.liveStatus==1">继续直播</button>
+			<view @click="beforeReady1()" type="default" class="affrimMessage" v-if="this.liveStatus==0">确认信息</view>
+			<view @click="beforeReady1()" type="default" class="affrimMessage" v-if="this.liveStatus==1">继续直播</view>
 			<!--  v-if="code ==0" -->
 			<!-- <uni-popup ref="popup1" type="center">
 					<text class="context1">{{context1}}</text>
@@ -56,21 +68,52 @@
 					<button class="mini-btn" type="default" @click="consent2">同意</button>
 				</uni-popup> -->
 
-			<view class="popUp" v-if="privacy==0">
-				<view class="popUp1">
-					<text class="context">
-						用户隐私服务协议是本App对用户隐私保护的许诺，请您务必仔细阅读《<text @click="toPrivacy"
-							style="color: #007AFF;">用户隐私服务协议</text>》，以了解我们关于管理您个人信息的情况。
-						点击同意继续使用，不同意则退出App。
-					</text>
-					<button class="mini-btn" type="default" @click="quit"
-						style="width: 50%;display: inline-block;">退出</button>
-					<button class="mini-btn" type="default" @click="agree"
-						style="width: 50%;display: inline-block;">同意</button>
+			<view class="popUp" v-if="privacy==0" :style="{'height':screenHeight+'px'}">
+			</view>
+
+
+			<view class="popUp1" v-if="privacy==0">
+				<text
+					style="font-size:20px; color: #222222;justify-content: center;display:flex;line-height:60px;">用户协议</text>
+				<text class="context">
+					用户隐私服务协议是本App对用户隐私保护的许诺，请您务必仔细阅读《<text @click="toPrivacy"
+						style="color: #007AFF;">用户隐私服务协议</text>》，以了解我们关于管理您个人信息的情况。
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;点击同意进入并使用App，不同意则退出App。
+				</text>
+				<view class="miniBtn" style="background-color: #F0EFF4;color: #666666;" @click="quit">不同意
+				</view>
+				<view class="miniBtn" style="background-color: rgba(229,72,93,1);color: #FFFFFF;" @click="agree">同意
 				</view>
 			</view>
 
 		</view>
+
+
+		<!-- 封面弹窗 -->
+		<uni-popup ref="popup" type="center">
+			<!-- <form @submit="formSubmit" @reset="formReset"> -->
+			<view class="uni-padding-wrap uni-common-mt"
+				style="background-color: #FFFFFF;padding: 15px 0;margin: 5%;border-radius: 10px;">
+				<view style="text-align: center;margin: 0 0 15px 0;">
+					选择封面
+				</view>
+				<view class="scroll-view_H">
+
+					<view v-for="(img0,index) in imgList" @click="setImg(img0,index)" style="position: relative;"
+						class="scroll-view-item_H">
+						<image class="scroll-view-item_H0" :src="img0">
+						</image>
+						<view v-if="img0==img"
+							style="display: inline-block;width: 20px;height: 20px; position: absolute;right: 0;top: 0;background-color: #4CD964;padding: 5px;">
+							<image src="../../static/selectImg.png" style="display: inline;width: 20px;height: 20px;">
+							</image>
+						</view>
+					</view>
+
+				</view>
+			</view>
+			<!-- </form> -->
+		</uni-popup>
 
 		<!-- 错误提示 -->
 		<uni-popup ref="error" type="bottom">
@@ -80,9 +123,15 @@
 	</view>
 </template>
 <script>
+	import permision from "@/js_sdk/wa-permission/permission.js"
 	export default {
 		data() {
 			return {
+
+				//直播描述
+				desc: '',
+				/* //封面加号图标
+				coverIcon: 1, */
 				//设备识别码
 				authorToken: "",
 				//协议状态
@@ -96,14 +145,11 @@
 				//直播分类列表
 				liveCategoryList: [],
 				//封面列表
-				imgList: [
-					'http://images.kpszkj.cn/images//6/train/img/2021_01_25/1353507604941676544.jpg',
-					'https://img2.baidu.com/it/u=2442148663,2015519237&fm=26&fmt=auto&gp=0.jpg',
-					'http://images.kpszkj.cn/images//6/train/img/2021_01_25/1353507604941676544.jpg',
-					'https://img2.baidu.com/it/u=2442148663,2015519237&fm=26&fmt=auto&gp=0.jpg',
-					'http://images.kpszkj.cn/images//6/train/img/2021_01_25/1353507604941676544.jpg',
-					'https://img2.baidu.com/it/u=2442148663,2015519237&fm=26&fmt=auto&gp=0.jpg'
-				],
+				/* 
+				 'http://images.kpszkj.cn/images//6/train/img/2021_01_25/1353507604941676544.jpg',
+				 'https://img2.baidu.com/it/u=2442148663,2015519237&fm=26&fmt=auto&gp=0.jpg',
+				 */
+				imgList: [],
 				//用户信息
 				luser: {},
 				//直播信息
@@ -113,17 +159,20 @@
 				//图片下标
 				imgIndex: 0,
 				//获取的图片封面
-				img: '',
+				img: ' ',
 				//直播标题
 				title: '',
 				//直播方向
-				orientationList: ['竖屏直播', '横屏直播'],
+				orientationList: ['竖屏', '横屏'],
 				//屏幕方向 0竖屏 1横屏
-				orientation: 0
+				orientation: 1,
+				//頁面高度
+				screenHeight: 0
 			}
 		},
 		onReady() {
 			this.init();
+			this.info()
 		},
 		onPullDownRefresh() {
 			//console.log('onPullDownRefresh');
@@ -137,6 +186,10 @@
 			//刷新当前页  
 			this.init();
 		},
+		onBackPress() {
+			//console.log(JSON.stringify(this.$refs.popup.ty));
+			this.$refs.popup.close();
+		},
 		methods: {
 			//页面初始化
 			init: function() {
@@ -144,7 +197,8 @@
 				this.caIndex = 0;
 				this.img = " ";
 				this.title = "";
-				this.orientation = 0;
+				this.desc = "";
+				this.orientation = 1;
 				this.liveStatus = 0;
 				//判断登陆状态
 				//从本地缓存中同步获取authorToken 对应的内容
@@ -171,7 +225,7 @@
 						// error
 					} */
 					//uni.setStorageSync('authorToken', "authorToken");
-					console.log('err' + e)
+					console.log('err' + e);
 				}
 			},
 			//跳转到登录页
@@ -210,15 +264,16 @@
 				this.caIndex = e.target.value;
 			},
 			//选择直播状态
-			orientationChange: function(e) {
+			orientationChange: function(orientation) {
 				//console.log('携带值为', e.target.value)
-				this.orientation = e.target.value
+				this.orientation = orientation;
 			},
 
 
 			//弹出封面
 			cover: function() {
 				this.$refs.popup.open();
+				//this.coverIcon = 0;
 			},
 			//设置图片路径
 			setImg: function(img, index) {
@@ -232,15 +287,20 @@
 				//console.log('图片下标' + this.isImg)
 			},
 			//设置标题
-			onInput: function(event) {
+			onInput1: function(event) {
 				this.title = event.target.value
+			},
+
+			//设置描述
+			onInput2: function(event) {
+				this.desc = event.target.value
 			},
 
 
 			//查找登陆的用户信息
 			findActiveUser: function() {
 				uni.request({
-					url: 'http://192.168.0.110:8080/kp/luser/findActiveUser.do',
+					url: 'http://www.kpszkj.cn/luser/findActiveUser.do',
 					data: {
 						authorToken: this.authorToken,
 					},
@@ -265,7 +325,7 @@
 			//查找直播类别
 			findList: function() {
 				uni.request({
-					url: 'http://192.168.0.110:8080/kp/liveCategory/findAll.do',
+					url: 'http://www.kpszkj.cn/liveCategory/findAll.do',
 					data: {
 						cFk: this.luser.cFk,
 					},
@@ -275,6 +335,9 @@
 					},
 					success: (res) => {
 						this.liveCategoryList = res.data;
+						this.imgList = JSON.parse(this.liveCategoryList[0].key1);
+						//console.log(this.liveCategoryList[0].key1);
+						//console.log(this.imgList[0]);
 						this.onLiveReady();
 					}
 				});
@@ -282,7 +345,7 @@
 			//查找是否存在正在直播的内容
 			onLiveReady: function() {
 				uni.request({
-					url: 'http://192.168.0.110:8080/kp/live/onReady.do',
+					url: 'http://www.kpszkj.cn/live/onReady.do',
 					data: {
 						authorToken: this.authorToken,
 					},
@@ -316,7 +379,7 @@
 			//查找单个直播
 			findOne: function() {
 				uni.request({
-					url: 'http://192.168.0.110:8080/kp/live/findOne.do',
+					url: 'http://www.kpszkj.cn/live/findOne.do',
 					data: {
 						liveId: this.liveId
 					},
@@ -336,14 +399,65 @@
 							}
 						}
 						this.title = this.live.title;
+						this.desc = this.live.description;
 						this.orientation = this.live.orientation;
 						this.liveStatus = 1;
 					}
 				});
 			},
+			beforeReady: function() {
+				var that = this;
+				uni.showModal({
+					title: "申请摄像头、麦克风权限",
+					content: "鲲鹏云播软件需要您授权摄像头和麦克风才能正常使用，请您授权",
+					showCancel: false,
+					confirmText: "立即授权",
+					success: function(res) {
+						if (res.confirm) {
+							that.beforeReady1();
+						} else if (res.cancel) {
+							this.error = "授权后开始直播";
+							this.$refs.error.open();
+							return;
+						}
+					}
+				});
+			},
+
+			async beforeReady1() {
+				var that = this;
+				var result1 = await permision.requestAndroidPermission(
+					"android.permission.CAMERA");
+				var result2 = await permision.requestAndroidPermission(
+					"android.permission.RECORD_AUDIO");
+				if (result1 == 1 && result2 == 1) {
+					setTimeout(function() {
+						that.ready();
+					}, 200)
+				} else {
+					that.beforeReady();
+					return;
+				}
+			},
 			//直播准备
 			ready: function() {
-				if (this.img == "") {
+				/* var result = await permision.requestAndroidPermission("android.permission.CAMERA")
+				var strStatus
+				if (result == 1) {
+					strStatus = "已获得授权"
+				} else if (result == 0) {
+					strStatus = "未获得授权"
+					this.error = "请选择封面";
+					this.$refs.error.open();
+					return;
+				} else {
+					strStatus = "被永久拒绝权限"
+					this.error = "请选择封面";
+					this.$refs.error.open();
+					return;
+				} */
+
+				if (this.img == " ") {
 					this.error = "请选择封面";
 					this.$refs.error.open();
 					return;
@@ -355,10 +469,11 @@
 				}
 				if (this.liveId == 0) {
 					uni.request({
-						url: 'http://192.168.0.110:8080/kp/live/ready.do',
+						url: 'http://www.kpszkj.cn/live/ready.do',
 						data: {
 							img: this.img,
 							title: this.title,
+							description: this.desc,
 							url: this.luser.playUrl,
 							orientation: this.orientation,
 							type: 0,
@@ -379,6 +494,7 @@
 									uni.setStorageSync('liveId', this.liveId);
 									//console.log(this.liveId);
 									//console.log("标题：" + this.title);
+									console.log('屏幕方向：' + this.orientation)
 									if (this.orientation == 0) {
 										//console.log('竖屏' + this.orientation)
 										uni.navigateTo({
@@ -394,7 +510,7 @@
 									console.log(e);
 								}
 							} else {
-								console.log(this.luser.nickName);
+								/* console.log(this.luser.nickName); */
 								this.error = res.data.message;
 								this.$refs.error.open();
 							}
@@ -402,11 +518,12 @@
 					});
 				} else {
 					uni.request({
-						url: 'http://192.168.0.110:8080/kp/live/ready.do',
+						url: 'http://www.kpszkj.cn/live/ready.do',
 						data: {
 							id: this.liveId,
 							img: this.img,
 							title: this.title,
+							description: this.desc,
 							url: this.luser.playUrl,
 							orientation: this.orientation,
 							type: 0,
@@ -427,6 +544,7 @@
 									uni.setStorageSync('liveId', this.liveId);
 									//console.log(this.liveId);
 									//console.log("标题：" + this.title);
+									//console.log('屏幕方向：' + this.orientation)
 									if (this.orientation == 0) {
 										//console.log('竖屏' + this.orientation)
 										uni.navigateTo({
@@ -453,7 +571,7 @@
 			},
 
 
-			/* info: function() {
+			info: function() {
 				let that = this;
 				uni.getSystemInfo({
 					success: function(res) {
@@ -465,11 +583,11 @@
 						// console.log(res.version);
 						// console.log(res.platform);
 						that.statusBarHeight = res.statusBarHeight;
-						that.isHeight = res.screenHeight - res.statusBarHeight - 2;
+						that.screenHeight = res.screenHeight - 60;
 					}
 				});
-				console.log('gaodu11' + this.isHeight)
-			}, */
+				// console.log('gaodu11' + this.isHeight)
+			},
 			/* scroll: function(e) {
 				//console.log(e);
 				this.old.scrollTop = e.detail.scrollTop
@@ -495,6 +613,139 @@
 	}
 </script>
 <style>
+	.affrimMessage {
+		width: 60%;
+		background: #e4475d;
+		border-radius: 20px;
+		padding: 10px;
+		margin: auto;
+		text-align: center;
+		font-weight: bolder;
+		box-shadow: 0px 0px 2px #e76c7e;
+		border: 1px solid red;
+		color: #FFFFFF;
+	}
+
+	.affrimMessage:hover {
+		background: #e76c7e;
+	}
+
+	.hsScreen {
+		width: 78%;
+		/* border: blue 1px solid; */
+		margin: 26px auto;
+		margin-bottom: 50px;
+	}
+
+	.hScreen {
+		/* border: #000000 1px solid; */
+		width: 29%;
+		height: 95px;
+		color: #F3F3F3;
+		display: inline-block;
+		text-align: center;
+		margin: 30px 9%;
+	}
+
+	.hScreen image {
+		width: 100%;
+		height: 80px;
+		margin-bottom: 8px;
+		display: block;
+	}
+
+	.desc {
+		/* border: #000000 1px solid;*/
+		height: 70px;
+		padding: 20px 0;
+		color: #EFEEEE;
+		margin: 0 35px;
+	}
+
+	.desc image {
+		width: 13px;
+		height: 13px;
+		margin-right: 4px;
+	}
+
+	.desc textarea {
+		/* display: inline-block; */
+		height: 90px;
+		//border-bottom: 1px solid #FFFFFF;
+	}
+
+	.nameClass {
+		color: #efeeee;
+		text-align: center;
+		padding: 35px 0 12px 0;
+		border-bottom: #efeeee solid 1px;
+		overflow: hidden;
+		margin: 0 35px;
+	}
+
+	.coverBtn {
+		/* border: #0062CC 1px solid; */
+		width: 47%;
+		height: 90px;
+		/* padding-top: 20px; */
+		padding-bottom: 15px;
+		margin: 0 auto;
+		background-color: rgba(0, 0, 0, 0.1);
+		/* display: flex; */
+		color: #e6e6e6;
+		text-align: center;
+		border-radius: 12px;
+
+	}
+
+	.coverBtn .coverPhoto {
+		/* padding-top: 10px; */
+		width: 100%;
+		height: 108px;
+		border-radius: 12px;
+		display: flex;
+	}
+
+	.coverBtn .coverIcon {
+		/* background-image: url(../../static/pic7.png); */
+		width: 23%;
+		height: 33%;
+		opacity: 0.8;
+		display: inline-block;
+		margin: 0 auto;
+		padding: 22px 0;
+	}
+
+	.liveClass {
+		padding: 15px 0 38px 0;
+		color: #3B4144;
+		justify-content: center;
+		/* border: #000000 1px solid; */
+		/* width:45px; */
+		display: flex;
+	}
+
+	.miniBtn {
+		/* display: flex; */
+		margin: 0 6% 30px 6%;
+		padding: 10px 0;
+		text-align: center;
+		height: ;
+		color: #353535;
+		font-size: 15px;
+		border-radius: 20px;
+		width: 38%;
+		display: inline-block;
+		/* border: none;
+		background-color: #f3f3f3;
+		border: #000000 0px solid; */
+	}
+
+	.pageBackground {
+		background-image: url(../../static/banner.jpg);
+		background-size: 100% 100%;
+	}
+
 	.status_bar {
 		height: var(--status-bar-height);
 		width: 100%;
@@ -513,10 +764,21 @@
 	.scroll-view_H {
 		//white-space: nowrap;
 		width: 100%;
+		padding-bottom: 20px;
+	}
+
+
+	.scroll-view-item_H0 {
+		display: inline-block;
+		width: 150px;
+		height: 100px;
+		line-height: 100px;
+		//text-align: center;
+		//font-size: 36rpx;
 	}
 
 	.scroll-view-item_H {
-		margin-left: 20px;
+		margin-left: 9px;
 		display: inline-block;
 		width: 150px;
 		height: 100px;
@@ -527,24 +789,45 @@
 
 	.popUp {
 		position: absolute;
+		width: 100%;
+		//border: red 2px solid;
 		right: 0;
 		left: 0;
-		top: 0px;
+		top: 0;
 		bottom: 0;
-		background: #fff;
-		/* border: #000000 2px solid; */
+		background-color: #999999;
+		opacity: 0.5;
+		/* border: red 2px solid; */
 		/* display:flex; */
 		/* align-items: auto; */
 		/* margin: 0 auto; */
 		/* width:100%; */
-
 	}
 
+
 	.popUp1 {
-		margin: 50px auto;
+		position: absolute;
+		background: #FFFFFF;
+		border-radius: 10px;
+		width: 90%;
+		height: 300px;
+		right: 0;
+		left: 5%;
+		top: 200px;
+		bottom: 0;
 		/* align-items: auto; */
-		width: 83%;
-		border: #000000 2px solid;
+
+		/* border: #000000 2px solid; */
+	}
+
+	.popUp1 .context {
+		margin: 0px 24px 24px 24px;
+		color: #555555;
+		font-size: 15px;
+		line-height: 22px;
+		display: flex;
+		/* border: red 1px solid; */
+		text-indent: 2em;
 	}
 
 	.screen {
