@@ -1,7 +1,7 @@
 <template>
 	<view  class="screen">
 		
-		<!-- <view class="mycss">æˆ‘çš„</view> -->
+		<!-- <view class="mycss">ÎÒµÄ</view> -->
 		<view class="bgClass">
 			<image class="image2" :src="luser.headPortrait"></image>
 			<text class="userName">{{luser.nickName}}</text>
@@ -12,32 +12,32 @@
 		<view class="li">
 			
 			<text class="liCss">
-				å§“å
+				ĞÕÃû
 				<text class="rightClass">{{luser.nickName}}</text>
 			</text>
 			
 			<text class="liCss">
-				æ€§åˆ«
+				ĞÔ±ğ
 				<text class="rightClass">{{luser.sex}}</text>
 			</text>
 			
 			<text class="liCss">
-				æ˜µç§°
+				êÇ³Æ
 				<text class="rightClass">{{luser.username}}</text>
 			</text>
 			
 			<text class="liCss">
-				è´¦æˆ·çŠ¶æ€
+				ÕË»§×´Ì¬
 				<text class="rightClass">{{luser.sex}}</text>
 			</text>
 			
 			<text class="liCss">
-				ç™»é™†æ—¶é—´
+				µÇÂ½Ê±¼ä
 				<text class="rightClass">{{luser.lastLoginTime}}</text>
 			</text>
 			
 			<text class="liCss">
-				å®£è¨€
+				ĞûÑÔ
 				<text class="rightClass">{{luser.username}}</text>
 			</text>
 				
