@@ -544,7 +544,7 @@
 									uni.setStorageSync('liveId', this.liveId);
 									//console.log(this.liveId);
 									//console.log("标题：" + this.title);
-									//console.log('屏幕方向：' + this.orientation)
+									// console.log('屏幕方向：' + this.orientation)
 									if (this.orientation == 0) {
 										//console.log('竖屏' + this.orientation)
 										uni.navigateTo({
